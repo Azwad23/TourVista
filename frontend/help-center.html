@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Help Center — TourVista</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- ========== HEADER ========== -->
+  <header class="header" id="header">
+    <div class="header-inner">
+      <a href="index.html" class="logo">
+        <i class="fas fa-globe-americas"></i>
+        <span>TourVista</span>
+      </a>
+      <nav class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="events.html">Events</a>
+        <a href="my-events.html">My Events</a>
+      </nav>
+      <div class="nav-auth">
+        <a href="login.html" class="btn btn-ghost">Log In</a>
+        <a href="register.html" class="btn btn-primary">Sign Up</a>
+      </div>
+      <button class="mobile-toggle"><i class="fas fa-bars"></i></button>
+    </div>
+    <div class="mobile-nav" id="mobileNav">
+      <a href="index.html">Home</a>
+      <a href="events.html">Events</a>
+      <a href="my-events.html">My Events</a>
+      <hr style="border-color:var(--border);margin:8px 0;">
+      <a href="login.html">Log In</a>
+      <a href="register.html">Sign Up</a>
+    </div>
+  </header>
+
+  <!-- ========== PAGE CONTENT ========== -->
+  <div class="page-content">
+    <!-- Page Header -->
+    <div style="background: linear-gradient(135deg, #0f172a, #1e3a5f); padding: 60px 0 40px; color: white;">
+      <div class="container">
+        <h1 style="color:white; font-size: 2.2rem; margin-bottom: 8px;">
+          <i class="fas fa-life-ring" style="margin-right:12px; opacity:0.7;"></i>Help Center
+        </h1>
+        <p style="color:rgba(255,255,255,0.65); font-size:1rem;">
+          Everything you need to get started and make the most of TourVista
+        </p>
+      </div>
+    </div>
+
+    <div class="container" style="padding-top:40px; padding-bottom:60px; max-width:900px;">
+
+      <!-- Getting Started -->
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px;margin-bottom:24px;">
+        <h2 style="font-size:1.4rem;margin-bottom:16px;display:flex;align-items:center;gap:10px;">
+          <i class="fas fa-rocket" style="color:var(--primary);"></i> Getting Started
+        </h2>
+        <div style="display:grid;gap:16px;">
+          <div style="padding:16px;background:var(--bg);border-radius:12px;">
+            <h3 style="font-size:1rem;margin-bottom:8px;">1. Create Your Account</h3>
+            <p style="color:var(--text-muted);font-size:0.92rem;line-height:1.6;">
+              Sign up for free using your email, or quickly register with Google or GitHub. Add a profile photo and phone number to complete your profile.
+            </p>
+          </div>
+          <div style="padding:16px;background:var(--bg);border-radius:12px;">
+            <h3 style="font-size:1rem;margin-bottom:8px;">2. Browse Events</h3>
+            <p style="color:var(--text-muted);font-size:0.92rem;line-height:1.6;">
+              Explore our collection of tours, treks, cycling trips, and outings. Use filters to find events by category, difficulty, or destination. Save your favorites to your wishlist.
+            </p>
+          </div>
+          <div style="padding:16px;background:var(--bg);border-radius:12px;">
+            <h3 style="font-size:1rem;margin-bottom:8px;">3. Register & Pay</h3>
+            <p style="color:var(--text-muted);font-size:0.92rem;line-height:1.6;">
+              Click "Register Now" on any event, then complete payment via bKash or Nagad. Your registration will be set to <strong>Pending</strong> until an admin approves it.
+            </p>
+          </div>
+          <div style="padding:16px;background:var(--bg);border-radius:12px;">
+            <h3 style="font-size:1rem;margin-bottom:8px;">4. Track Your Events</h3>
+            <p style="color:var(--text-muted);font-size:0.92rem;line-height:1.6;">
+              Visit <a href="my-events.html" style="color:var(--primary);font-weight:500;">My Events</a> to see all your registrations and their current status — Pending, Approved, Rejected, or Waitlisted.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Account & Profile -->
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px;margin-bottom:24px;">
+        <h2 style="font-size:1.4rem;margin-bottom:16px;display:flex;align-items:center;gap:10px;">
+          <i class="fas fa-user-circle" style="color:var(--primary);"></i> Account & Profile
+        </h2>
+        <div style="display:grid;gap:12px;">
+          <div style="padding:14px 16px;background:var(--bg);border-radius:12px;">
+            <strong>Edit your profile:</strong>
+            <span style="color:var(--text-muted);"> Go to <a href="profile.html" style="color:var(--primary);">Profile</a> to update your name, phone number, and profile picture.</span>
+          </div>
+          <div style="padding:14px 16px;background:var(--bg);border-radius:12px;">
+            <strong>Change password:</strong>
+            <span style="color:var(--text-muted);"> On the Profile page, scroll down to the "Change Password" section.</span>
+          </div>
+          <div style="padding:14px 16px;background:var(--bg);border-radius:12px;">
+            <strong>Phone number format:</strong>
+            <span style="color:var(--text-muted);"> Must start with <code style="background:var(--border);padding:2px 6px;border-radius:4px;">+880</code> followed by 10 digits (e.g. +8801XXXXXXXXX).</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payments -->
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px;margin-bottom:24px;">
+        <h2 style="font-size:1.4rem;margin-bottom:16px;display:flex;align-items:center;gap:10px;">
+          <i class="fas fa-credit-card" style="color:var(--primary);"></i> Payments
+        </h2>
+        <div style="display:grid;gap:12px;">
+          <div style="padding:14px 16px;background:var(--bg);border-radius:12px;">
+            <strong>Accepted methods:</strong>
+            <span style="color:var(--text-muted);"> bKash and Nagad — Bangladesh's most popular mobile payment platforms.</span>
+          </div>
+          <div style="padding:14px 16px;background:var(--bg);border-radius:12px;">
+            <strong>Payment flow:</strong>
+            <span style="color:var(--text-muted);"> After clicking Register, you'll be redirected to the payment gateway. Complete payment there and you'll be brought back automatically.</span>
+          </div>
+          <div style="padding:14px 16px;background:var(--bg);border-radius:12px;">
+            <strong>Refunds:</strong>
+            <span style="color:var(--text-muted);"> For refund requests, please email <strong>support@tourvista.com</strong> with your registration details.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Registration Statuses -->
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px;margin-bottom:24px;">
+        <h2 style="font-size:1.4rem;margin-bottom:16px;display:flex;align-items:center;gap:10px;">
+          <i class="fas fa-clipboard-check" style="color:var(--primary);"></i> Registration Statuses
+        </h2>
+        <div style="display:grid;gap:12px;">
+          <div style="padding:14px 16px;background:#fef9c3;border-radius:12px;border-left:4px solid #eab308;">
+            <strong style="color:#92400e;">🟡 Pending</strong>
+            <span style="color:#78350f;"> — Your registration is awaiting admin review and approval.</span>
+          </div>
+          <div style="padding:14px 16px;background:#dcfce7;border-radius:12px;border-left:4px solid #22c55e;">
+            <strong style="color:#166534;">🟢 Approved</strong>
+            <span style="color:#14532d;"> — You're confirmed! Get ready for the event.</span>
+          </div>
+          <div style="padding:14px 16px;background:#fecaca;border-radius:12px;border-left:4px solid #ef4444;">
+            <strong style="color:#991b1b;">🔴 Rejected</strong>
+            <span style="color:#7f1d1d;"> — Your registration was not approved. Contact support for details.</span>
+          </div>
+          <div style="padding:14px 16px;background:#e9d5ff;border-radius:12px;border-left:4px solid #a855f7;">
+            <strong style="color:#581c87;">🟣 Waitlisted</strong>
+            <span style="color:#3b0764;"> — The event is full. You'll be notified if a spot opens up.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Need More Help -->
+      <div style="background:linear-gradient(135deg, var(--primary), #2563eb);border-radius:16px;padding:32px;text-align:center;color:white;">
+        <h2 style="font-size:1.4rem;margin-bottom:8px;color:white;">Still Need Help?</h2>
+        <p style="opacity:0.85;margin-bottom:20px;">Our AI chatbot is available 24/7, or reach out to our team directly.</p>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+          <a href="contact.html" class="btn" style="background:white;color:var(--primary);font-weight:600;text-decoration:none;">
+            <i class="fas fa-envelope"></i> Contact Us
+          </a>
+          <a href="faqs.html" class="btn" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3);text-decoration:none;">
+            <i class="fas fa-question-circle"></i> View FAQs
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/chatbot.js"></script>
+</body>
+</html>

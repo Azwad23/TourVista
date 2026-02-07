@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FAQs — TourVista</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    .faq-item { background:var(--card); border:1px solid var(--border); border-radius:12px; margin-bottom:12px; overflow:hidden; transition:box-shadow 0.2s; }
+    .faq-item:hover { box-shadow:0 2px 12px rgba(0,0,0,0.06); }
+    .faq-question { padding:18px 20px; cursor:pointer; display:flex; justify-content:space-between; align-items:center; gap:16px; font-weight:600; font-size:0.95rem; user-select:none; }
+    .faq-question i { color:var(--primary); transition:transform 0.3s; flex-shrink:0; }
+    .faq-question.active i { transform:rotate(180deg); }
+    .faq-answer { padding:0 20px; max-height:0; overflow:hidden; transition:max-height 0.3s ease, padding 0.3s ease; }
+    .faq-answer.open { padding:0 20px 18px; max-height:500px; }
+    .faq-answer p { color:var(--text-muted); font-size:0.92rem; line-height:1.7; margin:0; }
+    .faq-category { font-size:1.2rem; font-weight:700; margin:32px 0 16px; display:flex; align-items:center; gap:10px; }
+    .faq-category:first-child { margin-top:0; }
+  </style>
+</head>
+<body>
+
+  <!-- ========== HEADER ========== -->
+  <header class="header" id="header">
+    <div class="header-inner">
+      <a href="index.html" class="logo">
+        <i class="fas fa-globe-americas"></i>
+        <span>TourVista</span>
+      </a>
+      <nav class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="events.html">Events</a>
+        <a href="my-events.html">My Events</a>
+      </nav>
+      <div class="nav-auth">
+        <a href="login.html" class="btn btn-ghost">Log In</a>
+        <a href="register.html" class="btn btn-primary">Sign Up</a>
+      </div>
+      <button class="mobile-toggle"><i class="fas fa-bars"></i></button>
+    </div>
+    <div class="mobile-nav" id="mobileNav">
+      <a href="index.html">Home</a>
+      <a href="events.html">Events</a>
+      <a href="my-events.html">My Events</a>
+      <hr style="border-color:var(--border);margin:8px 0;">
+      <a href="login.html">Log In</a>
+      <a href="register.html">Sign Up</a>
+    </div>
+  </header>
+
+  <!-- ========== PAGE CONTENT ========== -->
+  <div class="page-content">
+    <div style="background: linear-gradient(135deg, #0f172a, #1e3a5f); padding: 60px 0 40px; color: white;">
+      <div class="container">
+        <h1 style="color:white; font-size: 2.2rem; margin-bottom: 8px;">
+          <i class="fas fa-question-circle" style="margin-right:12px; opacity:0.7;"></i>Frequently Asked Questions
+        </h1>
+        <p style="color:rgba(255,255,255,0.65); font-size:1rem;">
+          Quick answers to the most common questions about TourVista
+        </p>
+      </div>
+    </div>
+
+    <div class="container" style="padding-top:40px; padding-bottom:60px; max-width:800px;">
+
+      <!-- General -->
+      <h3 class="faq-category"><i class="fas fa-info-circle" style="color:var(--primary);"></i> General</h3>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+          <span>What is TourVista?</span>
+          <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="faq-answer">
+          <p>TourVista is a centralized group tour and event management platform. We organize tours, treks, cycling trips, and outings across Bangladesh and beyond. Users can browse events, register, pay online, and manage everything from one place.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+          <span>Is it free to create an account?</span>
+          <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="faq-answer">
+          <p>Yes! Creating a TourVista account is completely free. You only pay when you register for a specific event.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+          <span>Can I sign up with Google or GitHub?</span>
+          <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="faq-answer">
+          <p>Absolutely! We support one-click sign-up via Google and GitHub for your convenience. You can link these accounts during registration or from the login page.</p>
+        </div>
+      </div>
+
+      <!-- Events & Registration -->
+      <h3 class="faq-category"><i class="fas fa-calendar-alt" style="color:var(--primary);"></i> Events & Registration</h3>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+          <span>How do I register for an event?</span>
+          <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="faq-answer">
+          <p>Browse the <a href="events.html" style="color:var(--primary);">Events page</a>, click on an event you like, then click <strong>"Register Now"</strong>. You'll be asked to complete payment via bKash or Nagad. Once paid, your registration status will be <strong>Pending</strong> until approved by an admin.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+          <span>What do the registration statuses mean?</span>
+          <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="faq-answer">
+          <p><strong>Pending</strong> — Awaiting admin review.<br>
+          <strong>Approved</strong> — You're confirmed for the event!<br>
+          <strong>Rejected</strong> — Not approved; contact support for details.<br>
+          <strong>Waitlisted</strong> — Event is full; you'll be notified if a spot opens.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+          <span>Can I cancel my registration?</span>
+          <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="faq-answer">
+          <p>To cancel a registration, please contact us at <strong>support@tourvista.com</strong> with your event name and registration details. Cancellation policies may vary by event.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+          <span>What is the wishlist?</span>
+          <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="faq-answer">
+          <p>The wishlist lets you save events you're interested in for later. Click the heart icon on any event card to add it. View all your saved events on the <a href="wishlist.html" style="color:var(--primary);">Wishlist page</a>.</p>
+        </div>
+      </div>
+
+      <!-- Payments -->
+      <h3 class="faq-category"><i class="fas fa-credit-card" style="color:var(--primary);"></i> Payments</h3>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+          <span>What payment methods are accepted?</span>
+          <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="faq-answer">
+          <p>We accept <strong>bKash</strong> and <strong>Nagad</strong> — the two most popular mobile payment platforms in Bangladesh. You'll be redirected to the payment gateway during registration.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+          <span>How do I request a refund?</span>
+          <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="faq-answer">
+          <p>Email <strong>support@tourvista.com</strong> with your registration details, payment transaction ID, and reason for the refund. We'll process eligible refunds within 5-7 business days.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+          <span>My payment failed but money was deducted. What do I do?</span>
+          <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="faq-answer">
+          <p>Don't worry! If the payment didn't complete on our end, the amount will be auto-refunded by bKash/Nagad within 24-72 hours. If it doesn't, email us at <strong>support@tourvista.com</strong> with your transaction details.</p>
+        </div>
+      </div>
+
+      <!-- Account -->
+      <h3 class="faq-category"><i class="fas fa-user-cog" style="color:var(--primary);"></i> Account</h3>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+          <span>How do I update my profile?</span>
+          <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="faq-answer">
+          <p>Go to the <a href="profile.html" style="color:var(--primary);">Profile page</a> where you can edit your name, phone number, and upload a profile picture. Phone numbers must follow the format: <strong>+880</strong> followed by 10 digits.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+          <span>How do I change my password?</span>
+          <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="faq-answer">
+          <p>On the <a href="profile.html" style="color:var(--primary);">Profile page</a>, scroll to the <strong>"Change Password"</strong> section. Enter your current password and your new password to update it.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+          <span>Can I change my email address?</span>
+          <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="faq-answer">
+          <p>For security reasons, email addresses cannot be changed directly. If you need to update your email, please contact <strong>support@tourvista.com</strong> for assistance.</p>
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <div style="background:linear-gradient(135deg, var(--primary), #2563eb);border-radius:16px;padding:32px;text-align:center;color:white;margin-top:40px;">
+        <h2 style="font-size:1.3rem;margin-bottom:8px;color:white;">Didn't find your answer?</h2>
+        <p style="opacity:0.85;margin-bottom:20px;">Our team is always ready to help. Reach out and we'll respond as soon as possible.</p>
+        <a href="contact.html" class="btn" style="background:white;color:var(--primary);font-weight:600;text-decoration:none;">
+          <i class="fas fa-envelope"></i> Contact Support
+        </a>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/chatbot.js"></script>
+  <script>
+    function toggleFaq(el) {
+      var answer = el.nextElementSibling;
+      var isOpen = answer.classList.contains('open');
+
+      // Close all
+      document.querySelectorAll('.faq-answer').forEach(function(a) { a.classList.remove('open'); });
+      document.querySelectorAll('.faq-question').forEach(function(q) { q.classList.remove('active'); });
+
+      if (!isOpen) {
+        answer.classList.add('open');
+        el.classList.add('active');
+      }
+    }
+  </script>
+</body>
+</html>

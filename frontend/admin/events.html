@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Event Management — TourVista Admin</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body data-page="admin-events">
+
+  <!-- Header -->
+  <header class="header" id="header">
+    <div class="header-inner">
+      <div style="display:flex;align-items:center;gap:16px;">
+        <a href="../index.html" class="logo"><i class="fas fa-globe-americas"></i><span>TourVista</span></a>
+        <span class="badge badge-info" style="font-size:0.7rem;">ADMIN</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <a href="notifications.html" class="btn btn-icon btn-ghost" style="position:relative;" title="Notifications">
+          <i class="fas fa-bell"></i>
+          <span class="admin-notif-dot" style="position:absolute;top:4px;right:4px;width:8px;height:8px;border-radius:50%;background:var(--danger);display:none;"></span>
+        </a>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="admin-header-avatar" style="width:36px;height:36px;border-radius:50%;overflow:hidden;"></div>
+          <span class="admin-header-name" style="font-weight:600;font-size:0.85rem;">Admin</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-user">
+          <div class="sidebar-avatar admin-sidebar-avatar">--</div>
+          <div class="sidebar-user-info"><h4 class="admin-sidebar-name">Loading...</h4><p>Administrator</p></div>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="sidebar-nav-group">
+          <div class="sidebar-nav-label">Overview</div>
+          <a href="dashboard.html"><i class="fas fa-chart-pie"></i> Dashboard</a>
+        </div>
+        <div class="sidebar-nav-group">
+          <div class="sidebar-nav-label">Management</div>
+          <a href="events.html" class="active"><i class="fas fa-calendar-alt"></i> Events</a>
+          <a href="approvals.html"><i class="fas fa-user-check"></i> Approvals <span class="admin-pending-badge nav-badge">0</span></a>
+          <a href="users.html"><i class="fas fa-users"></i> Users</a>
+        </div>
+        <div class="sidebar-nav-group">
+          <div class="sidebar-nav-label">Tools</div>
+          <a href="chatbot.html"><i class="fas fa-robot"></i> Chatbot Monitor</a>
+          <a href="settings.html"><i class="fas fa-cog"></i> Settings</a>
+        </div>
+        <div class="sidebar-nav-group" style="margin-top:16px;">
+          <a href="#" onclick="event.preventDefault(); Auth.logout();"><i class="fas fa-sign-out-alt"></i> Log Out</a>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="dash-content">
+      <div class="dash-header">
+        <div>
+          <h1>Event Management</h1>
+          <p>Create, edit, and manage all platform events</p>
+        </div>
+        <button class="btn btn-primary" onclick="openCreateEvent()">
+          <i class="fas fa-plus"></i> Create Event
+        </button>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Search events..." oninput="searchAdminEvents(this.value)">
+        </div>
+        <div class="filters">
+          <button class="filter-chip active" onclick="filterAdminEvents('all')">All</button>
+          <button class="filter-chip" onclick="filterAdminEvents('open')">Open</button>
+          <button class="filter-chip" onclick="filterAdminEvents('full')">Full</button>
+          <button class="filter-chip" onclick="filterAdminEvents('closed')">Closed</button>
+        </div>
+      </div>
+
+      <!-- Events Table -->
+      <div class="table-container">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Event</th>
+              <th>Date</th>
+              <th>Destination</th>
+              <th>Price</th>
+              <th>Participants</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="adminEventsTable"></tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <!-- Create/Edit Event Modal -->
+  <div class="modal-overlay" id="eventModal">
+    <div class="modal" style="max-width:640px;">
+      <div class="modal-header">
+        <h2 id="eventFormTitle">Create New Event</h2>
+        <button class="modal-close" onclick="closeModal('eventModal')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <form id="eventForm">
+          <!-- Event Image Upload -->
+          <div class="form-group">
+            <label class="form-label">Event Image</label>
+            <div id="eventImagePicker" style="border:2px dashed var(--border);border-radius:var(--radius-md);padding:20px;text-align:center;cursor:pointer;position:relative;overflow:hidden;min-height:160px;display:flex;align-items:center;justify-content:center;transition:all 0.2s;" onclick="document.getElementById('eventImageInput').click()">
+              <div id="eventImagePlaceholder">
+                <i class="fas fa-cloud-upload-alt" style="font-size:2rem;color:var(--text-light);margin-bottom:8px;display:block;"></i>
+                <p style="margin:0;color:var(--text-light);font-size:0.9rem;">Click to upload event image</p>
+                <p style="margin:4px 0 0;color:var(--text-lighter);font-size:0.75rem;">JPG, PNG, GIF, WEBP — Max 10MB</p>
+              </div>
+              <img id="eventImagePreview" src="" alt="Preview" style="display:none;max-width:100%;max-height:200px;border-radius:var(--radius);object-fit:cover;">
+            </div>
+            <input type="file" id="eventImageInput" accept="image/*" style="display:none" onchange="previewEventImage(this)">
+            <div id="eventImageActions" style="display:none;margin-top:8px;text-align:right;">
+              <button type="button" class="btn btn-ghost btn-sm" onclick="removeEventImage()" style="color:var(--danger);">
+                <i class="fas fa-trash"></i> Remove Image
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Event Title *</label>
+            <input type="text" class="form-input" id="eventTitle" placeholder="Enter event title" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Description *</label>
+            <textarea class="form-textarea" id="eventDescription" placeholder="Describe the event in detail..." rows="4" required></textarea>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+            <div class="form-group">
+              <label class="form-label">Category</label>
+              <select class="form-select" id="eventCategory">
+                <option value="tour">Cultural Tour</option>
+                <option value="trek">Trekking</option>
+                <option value="cycling">Cycling</option>
+                <option value="outing">Outing</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Status</label>
+              <select class="form-select" id="eventStatus">
+                <option value="open">Open</option>
+                <option value="closed">Closed</option>
+                <option value="full">Full</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Destination</label>
+            <input type="text" class="form-input" id="eventDestination" placeholder="e.g. Himalayan Base Camp, Nepal">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Meeting Point</label>
+            <input type="text" class="form-input" id="eventMeetingPoint" placeholder="e.g. Airport Terminal, Railway Station">
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+            <div class="form-group">
+              <label class="form-label">Start Date</label>
+              <input type="date" class="form-input" id="eventStartDate">
+            </div>
+            <div class="form-group">
+              <label class="form-label">End Date</label>
+              <input type="date" class="form-input" id="eventEndDate">
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
+            <div class="form-group">
+              <label class="form-label">Cost ($)</label>
+              <input type="number" class="form-input" id="eventCost" placeholder="0" min="0">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Participant Limit</label>
+              <input type="number" class="form-input" id="eventLimit" placeholder="20" min="1">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Difficulty</label>
+              <select class="form-select" id="eventDifficulty">
+                <option value="easy">Easy</option>
+                <option value="moderate" selected>Moderate</option>
+                <option value="challenging">Challenging</option>
+              </select>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal('eventModal')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveEvent()">
+          <i class="fas fa-save"></i> Save Event
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/app.js"></script>
+  <script src="../js/admin.js"></script>
+  <script>
+    if (!Auth.isLoggedIn() || !Auth.isAdmin()) { window.location.href = '../login.html'; }
+  </script>
+
+  <script>
+    var selectedEventImage = null; // File object for new image
+    var existingEventImage = null; // URL of existing image when editing
+
+    function openCreateEvent() {
+      document.getElementById('eventFormTitle').textContent = 'Create New Event';
+      document.getElementById('eventForm').reset();
+      document.getElementById('eventModal').removeAttribute('data-edit-id');
+      resetEventImagePicker();
+      openModal('eventModal');
+    }
+
+    function previewEventImage(input) {
+      if (input.files && input.files[0]) {
+        selectedEventImage = input.files[0];
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          var preview = document.getElementById('eventImagePreview');
+          var placeholder = document.getElementById('eventImagePlaceholder');
+          var actions = document.getElementById('eventImageActions');
+          var picker = document.getElementById('eventImagePicker');
+          preview.src = e.target.result;
+          preview.style.display = 'block';
+          placeholder.style.display = 'none';
+          actions.style.display = 'block';
+          picker.style.borderColor = 'var(--primary)';
+          picker.style.borderStyle = 'solid';
+        };
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+
+    function removeEventImage() {
+      selectedEventImage = null;
+      existingEventImage = null;
+      document.getElementById('eventImageInput').value = '';
+      resetEventImagePicker();
+      // Mark for removal on edit
+      document.getElementById('eventImagePicker').setAttribute('data-removed', 'true');
+    }
+
+    function resetEventImagePicker() {
+      var preview = document.getElementById('eventImagePreview');
+      var placeholder = document.getElementById('eventImagePlaceholder');
+      var actions = document.getElementById('eventImageActions');
+      var picker = document.getElementById('eventImagePicker');
+      preview.style.display = 'none';
+      preview.src = '';
+      placeholder.style.display = 'block';
+      actions.style.display = 'none';
+      picker.style.borderColor = '';
+      picker.style.borderStyle = 'dashed';
+      picker.removeAttribute('data-removed');
+      selectedEventImage = null;
+      existingEventImage = null;
+    }
+
+    function showExistingEventImage(imageUrl) {
+      existingEventImage = imageUrl;
+      var url = getEventImageUrl(imageUrl);
+      var preview = document.getElementById('eventImagePreview');
+      var placeholder = document.getElementById('eventImagePlaceholder');
+      var actions = document.getElementById('eventImageActions');
+      var picker = document.getElementById('eventImagePicker');
+      preview.src = url;
+      preview.style.display = 'block';
+      placeholder.style.display = 'none';
+      actions.style.display = 'block';
+      picker.style.borderColor = 'var(--primary)';
+      picker.style.borderStyle = 'solid';
+    }
+
+    function searchAdminEvents(query) {
+      const events = MockData.events.filter(e =>
+        e.title.toLowerCase().includes(query.toLowerCase()) ||
+        e.destination.toLowerCase().includes(query.toLowerCase())
+      );
+      const container = document.getElementById('adminEventsTable');
+      // Re-render with filtered
+      container.innerHTML = events.map(event => `
+        <tr>
+          <td>
+            <div class="user-cell">
+              <div class="avatar" style="${event.gradient};color:white;">
+                <i class="${event.icon}" style="font-size:0.7rem"></i>
+              </div>
+              <div>
+                <div class="name">${event.title.substring(0, 35)}...</div>
+                <div class="email">${getCategoryLabel(event.category)}</div>
+              </div>
+            </div>
+          </td>
+          <td>${formatDate(event.date)}</td>
+          <td>${event.destination.substring(0, 25)}...</td>
+          <td>${formatCurrency(event.cost)}</td>
+          <td>${event.registered}/${event.participantLimit}</td>
+          <td>${getStatusBadge(event.status)}</td>
+          <td>
+            <div class="flex gap-1">
+              <button class="btn btn-ghost btn-sm" onclick="editEvent(${event.id})"><i class="fas fa-edit"></i></button>
+              <button class="btn btn-ghost btn-sm" onclick="deleteEvent(${event.id})" style="color:var(--danger)"><i class="fas fa-trash"></i></button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+  </script>
+</body>
+</html>

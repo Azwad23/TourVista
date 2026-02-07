@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login — TourVista</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="auth-page">
+    <div class="auth-container">
+      <!-- Left Visual Panel -->
+      <div class="auth-visual">
+        <h2>Welcome Back to TourVista</h2>
+        <p>Log in to continue exploring amazing group tours and events around the world.</p>
+
+        <div class="auth-visual-features">
+          <div><i class="fas fa-check-circle"></i> Access your registered events</div>
+          <div><i class="fas fa-check-circle"></i> Track registration status</div>
+          <div><i class="fas fa-check-circle"></i> Chat with our AI assistant</div>
+          <div><i class="fas fa-check-circle"></i> Discover new adventures</div>
+        </div>
+
+        <div style="margin-top: 48px; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 12px; backdrop-filter: blur(10px);">
+          <div style="display:flex;gap:4px;margin-bottom:8px;">
+            <i class="fas fa-star" style="color:#fbbf24;font-size:0.8rem;"></i>
+            <i class="fas fa-star" style="color:#fbbf24;font-size:0.8rem;"></i>
+            <i class="fas fa-star" style="color:#fbbf24;font-size:0.8rem;"></i>
+            <i class="fas fa-star" style="color:#fbbf24;font-size:0.8rem;"></i>
+            <i class="fas fa-star" style="color:#fbbf24;font-size:0.8rem;"></i>
+          </div>
+          <p style="font-size:0.85rem;font-style:italic;opacity:0.9;margin-bottom:8px;">"TourVista made planning group trips so effortless. Can't wait for my next adventure!"</p>
+          <p style="font-size:0.8rem;opacity:0.7;">— Sarah W., Traveler</p>
+        </div>
+      </div>
+
+      <!-- Right Form Panel -->
+      <div class="auth-form-section">
+        <a href="index.html" class="logo">
+          <i class="fas fa-globe-americas"></i>
+          <span>TourVista</span>
+        </a>
+
+        <h2>Sign In</h2>
+        <p class="subtitle">Enter your credentials to access your account</p>
+
+        <form class="auth-form" id="loginForm" onsubmit="handleLogin(event)">
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <div style="position:relative;">
+              <i class="fas fa-envelope" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-muted);"></i>
+              <input type="email" class="form-input" style="padding-left:40px;" placeholder="you@example.com" required>
+            </div>
+            <div class="form-error"></div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <div style="position:relative;">
+              <i class="fas fa-lock" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-muted);"></i>
+              <input type="password" class="form-input" style="padding-left:40px;" placeholder="Enter your password" required id="loginPassword" autocomplete="current-password">
+              <button type="button" onclick="togglePassword('loginPassword', this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;color:var(--text-muted);font-size:0.9rem;">
+                <i class="fas fa-eye"></i>
+              </button>
+            </div>
+            <div class="form-error"></div>
+          </div>
+
+          <div class="auth-extras">
+            <label class="form-check">
+              <input type="checkbox"> <span style="font-size:0.85rem;">Remember me</span>
+            </label>
+            <a href="#">Forgot password?</a>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-lg" style="width:100%;">
+            <i class="fas fa-sign-in-alt"></i> Sign In
+          </button>
+
+          <div class="auth-divider">or continue with</div>
+
+          <div style="display:flex;gap:12px;">
+            <a href="/api/auth/google" class="btn btn-outline" style="flex:1;text-decoration:none;text-align:center;">
+              <i class="fab fa-google"></i> Google
+            </a>
+            <a href="/api/auth/github" class="btn btn-outline" style="flex:1;text-decoration:none;text-align:center;">
+              <i class="fab fa-github"></i> GitHub
+            </a>
+          </div>
+        </form>
+
+        <div class="auth-footer">
+          Don't have an account? <a href="register.html">Create one</a>
+        </div>
+
+        <!-- Quick Access for Demo -->
+        <div style="margin-top:20px;padding:16px;background:var(--bg);border-radius:var(--radius-md);border:1px dashed var(--border);">
+          <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:8px;font-weight:600;">Quick Demo Access:</p>
+          <div style="display:flex;gap:8px;">
+            <button onclick="demoLogin('participant')" class="btn btn-sm btn-outline" style="flex:1;font-size:0.75rem;">
+              <i class="fas fa-user"></i> User Demo
+            </button>
+            <button onclick="demoLogin('admin')" class="btn btn-sm btn-secondary" style="flex:1;font-size:0.75rem;">
+              <i class="fas fa-user-shield"></i> Admin Demo
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    // Redirect if already logged in
+    if (Auth.isLoggedIn()) {
+      document.location = Auth.isAdmin() ? 'admin/dashboard.html' : 'events.html';
+    }
+
+    function goTo(url) {
+      // Try multiple redirect methods for maximum compatibility
+      try { document.location = url; } catch(e) {}
+      try { window.location.href = url; } catch(e) {}
+      try { window.open(url, '_self'); } catch(e) {}
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      var email = document.querySelector('#loginForm input[type="email"]').value;
+      var password = document.getElementById('loginPassword').value;
+      var btn = document.querySelector('#loginForm button[type="submit"]');
+
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing in...';
+
+      try {
+        var data = await AuthAPI.login(email, password);
+        if (data && data.user) {
+          var target = data.user.role === 'admin' ? 'admin/dashboard.html' : 'events.html';
+          goTo(target);
+        } else {
+          showToast('Login failed — no data returned', 'error');
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In';
+        }
+      } catch (err) {
+        showToast(err.message || 'Login failed', 'error');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In';
+      }
+    }
+
+    async function demoLogin(role) {
+      var email = role === 'admin' ? 'admin@tourvista.com' : 'sarah@example.com';
+      var password = role === 'admin' ? 'admin123' : 'pass123';
+      try {
+        var data = await AuthAPI.login(email, password);
+        if (data && data.user) {
+          var target = data.user.role === 'admin' ? 'admin/dashboard.html' : 'events.html';
+          goTo(target);
+        }
+      } catch (err) {
+        showToast(err.message || 'Demo login failed', 'error');
+      }
+    }
+
+    function togglePassword(inputId, btn) {
+      var input = document.getElementById(inputId);
+      var icon = btn.querySelector('i');
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'fas fa-eye-slash';
+      } else {
+        input.type = 'password';
+        icon.className = 'fas fa-eye';
+      }
+    }
+  </script>
+</body>
+</html>

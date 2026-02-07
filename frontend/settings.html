@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings — TourVista</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- ========== HEADER ========== -->
+  <header class="header" id="header">
+    <div class="header-inner">
+      <a href="index.html" class="logo">
+        <i class="fas fa-globe-americas"></i>
+        <span>TourVista</span>
+      </a>
+      <nav class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="events.html">Events</a>
+        <a href="my-events.html">My Events</a>
+      </nav>
+      <div class="nav-auth">
+        <a href="login.html" class="btn btn-ghost">Log In</a>
+        <a href="register.html" class="btn btn-primary">Sign Up</a>
+      </div>
+      <button class="mobile-toggle"><i class="fas fa-bars"></i></button>
+    </div>
+    <div class="mobile-nav" id="mobileNav">
+      <a href="index.html">Home</a>
+      <a href="events.html">Events</a>
+      <a href="my-events.html">My Events</a>
+      <hr style="border-color:var(--border);margin:8px 0;">
+      <a href="login.html">Log In</a>
+      <a href="register.html">Sign Up</a>
+    </div>
+  </header>
+
+  <!-- ========== DASHBOARD LAYOUT ========== -->
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-user">
+          <div class="sidebar-avatar">--</div>
+          <div class="sidebar-user-info">
+            <h4>Loading...</h4>
+            <p>Participant</p>
+          </div>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="sidebar-nav-group">
+          <div class="sidebar-nav-label">Menu</div>
+          <a href="my-events.html"><i class="fas fa-calendar-alt"></i> My Events</a>
+          <a href="events.html"><i class="fas fa-compass"></i> Browse Events</a>
+          <a href="wishlist.html"><i class="fas fa-heart"></i> Wishlist</a>
+          <a href="profile.html"><i class="fas fa-user"></i> My Profile</a>
+          <a href="notifications.html"><i class="fas fa-bell"></i> Notifications</a>
+          <a href="settings.html" class="active"><i class="fas fa-cog"></i> Settings</a>
+        </div>
+        <div class="sidebar-nav-group" style="margin-top:16px;">
+          <div class="sidebar-nav-label">Account</div>
+          <a href="#" onclick="event.preventDefault(); Auth.logout();"><i class="fas fa-sign-out-alt"></i> Log Out</a>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="dash-content">
+      <div class="dash-header">
+        <div>
+          <h1>Settings</h1>
+          <p>Manage your account preferences</p>
+        </div>
+      </div>
+
+      <!-- Notification Preferences -->
+      <div class="settings-section">
+        <h3><i class="fas fa-bell" style="margin-right:8px;color:var(--primary);"></i>Notification Preferences</h3>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <h4>Email Notifications</h4>
+            <p>Receive email updates about your registrations and events</p>
+          </div>
+          <div class="toggle-switch active" onclick="toggleSetting(this)" data-key="emailNotif"></div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <h4>Registration Updates</h4>
+            <p>Get notified when your registration status changes</p>
+          </div>
+          <div class="toggle-switch active" onclick="toggleSetting(this)" data-key="regUpdates"></div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <h4>New Event Alerts</h4>
+            <p>Get notified when new events matching your interests are added</p>
+          </div>
+          <div class="toggle-switch" onclick="toggleSetting(this)" data-key="newEvents"></div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <h4>Promotional Emails</h4>
+            <p>Receive special offers and promotional content</p>
+          </div>
+          <div class="toggle-switch" onclick="toggleSetting(this)" data-key="promoEmails"></div>
+        </div>
+      </div>
+
+      <!-- Display Preferences -->
+      <div class="settings-section">
+        <h3><i class="fas fa-palette" style="margin-right:8px;color:var(--primary);"></i>Display Preferences</h3>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <h4>Dark Mode</h4>
+            <p>Switch to a darker color scheme for comfortable viewing</p>
+          </div>
+          <div class="toggle-switch" onclick="toggleDarkMode(this)" data-key="darkMode"></div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <h4>Compact View</h4>
+            <p>Show more items per page with reduced spacing</p>
+          </div>
+          <div class="toggle-switch" onclick="toggleSetting(this)" data-key="compactView"></div>
+        </div>
+      </div>
+
+      <!-- Privacy -->
+      <div class="settings-section">
+        <h3><i class="fas fa-shield-alt" style="margin-right:8px;color:var(--primary);"></i>Privacy & Security</h3>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <h4>Profile Visibility</h4>
+            <p>Allow other participants to see your profile on shared events</p>
+          </div>
+          <div class="toggle-switch active" onclick="toggleSetting(this)" data-key="profileVisible"></div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <h4>Two-Factor Authentication</h4>
+            <p>Add an extra layer of security to your account</p>
+          </div>
+          <div class="toggle-switch" onclick="toggleSetting(this)" data-key="twoFactor"></div>
+        </div>
+      </div>
+
+      <!-- Account Actions -->
+      <div class="settings-section">
+        <h3><i class="fas fa-exclamation-triangle" style="margin-right:8px;color:var(--danger);"></i>Danger Zone</h3>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <h4>Export Data</h4>
+            <p>Download a copy of all your data</p>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="exportData()">
+            <i class="fas fa-download"></i> Export
+          </button>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <h4 style="color:var(--danger);">Delete Account</h4>
+            <p>Permanently delete your account and all associated data</p>
+          </div>
+          <button class="btn btn-sm" style="background:var(--danger);color:white;" onclick="deleteAccount()">
+            <i class="fas fa-trash"></i> Delete
+          </button>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/chatbot.js"></script>
+
+  <script>
+    // Require login
+    if (!Auth.isLoggedIn()) {
+      window.location.href = 'login.html';
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // Populate sidebar user info
+      var user = Auth.getUser();
+      if (user) {
+        document.querySelectorAll('.sidebar-avatar').forEach(function(el) { el.innerHTML = getAvatarHtml(user, 42, '1rem'); });
+        document.querySelectorAll('.sidebar-user-info h4').forEach(function(el) { el.textContent = user.first_name + ' ' + user.last_name; });
+        document.querySelectorAll('.sidebar-user-info p').forEach(function(el) { el.textContent = user.role === 'admin' ? 'Administrator' : 'Participant'; });
+      }
+
+      // Load saved settings from localStorage
+      loadSettings();
+    });
+
+    function loadSettings() {
+      var settings = JSON.parse(localStorage.getItem('tourvista_settings') || '{}');
+      document.querySelectorAll('.toggle-switch').forEach(function(toggle) {
+        var key = toggle.getAttribute('data-key');
+        if (settings[key] !== undefined) {
+          toggle.classList.toggle('active', settings[key]);
+        }
+      });
+    }
+
+    function saveSetting(key, value) {
+      var settings = JSON.parse(localStorage.getItem('tourvista_settings') || '{}');
+      settings[key] = value;
+      localStorage.setItem('tourvista_settings', JSON.stringify(settings));
+    }
+
+    function toggleSetting(el) {
+      el.classList.toggle('active');
+      var key = el.getAttribute('data-key');
+      var isActive = el.classList.contains('active');
+      saveSetting(key, isActive);
+      showToast('Setting updated', 'success');
+    }
+
+    function toggleDarkMode(el) {
+      el.classList.toggle('active');
+      var isDark = el.classList.contains('active');
+      saveSetting('darkMode', isDark);
+
+      if (isDark) {
+        document.documentElement.style.setProperty('--bg', '#0f172a');
+        document.documentElement.style.setProperty('--bg-white', '#1e293b');
+        document.documentElement.style.setProperty('--bg-card', '#1e293b');
+        document.documentElement.style.setProperty('--text', '#e2e8f0');
+        document.documentElement.style.setProperty('--text-light', '#94a3b8');
+        document.documentElement.style.setProperty('--border', '#334155');
+        document.documentElement.style.setProperty('--border-light', '#1e293b');
+      } else {
+        document.documentElement.style.setProperty('--bg', '#f8fafc');
+        document.documentElement.style.setProperty('--bg-white', '#ffffff');
+        document.documentElement.style.setProperty('--bg-card', '#ffffff');
+        document.documentElement.style.setProperty('--text', '#1e293b');
+        document.documentElement.style.setProperty('--text-light', '#64748b');
+        document.documentElement.style.setProperty('--border', '#e2e8f0');
+        document.documentElement.style.setProperty('--border-light', '#f1f5f9');
+      }
+      showToast(isDark ? 'Dark mode enabled' : 'Light mode enabled', 'success');
+    }
+
+    function exportData() {
+      var user = Auth.getUser();
+      var settings = JSON.parse(localStorage.getItem('tourvista_settings') || '{}');
+      var exportObj = { user: user, settings: settings, exported_at: new Date().toISOString() };
+      var blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: 'application/json' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'tourvista-data-export.json';
+      a.click();
+      showToast('Data exported successfully', 'success');
+    }
+
+    function deleteAccount() {
+      if (!confirm('Are you sure you want to delete your account? This action cannot be undone.')) return;
+      if (!confirm('This will permanently delete all your data. Type OK to confirm.')) return;
+      showToast('Account deletion request submitted. An admin will review this.', 'info');
+    }
+  </script>
+</body>
+</html>

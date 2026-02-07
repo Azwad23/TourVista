@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Event Details — TourVista</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- ========== HEADER ========== -->
+  <header class="header" id="header">
+    <div class="header-inner">
+      <a href="index.html" class="logo">
+        <i class="fas fa-globe-americas"></i>
+        <span>TourVista</span>
+      </a>
+      <nav class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="events.html" class="active">Events</a>
+        <a href="my-events.html">My Events</a>
+      </nav>
+      <div class="nav-auth">
+        <a href="login.html" class="btn btn-ghost">Log In</a>
+        <a href="register.html" class="btn btn-primary">Sign Up</a>
+      </div>
+      <button class="mobile-toggle"><i class="fas fa-bars"></i></button>
+    </div>
+    <div class="mobile-nav" id="mobileNav">
+      <a href="index.html">Home</a>
+      <a href="events.html">Events</a>
+      <a href="my-events.html">My Events</a>
+    </div>
+  </header>
+
+  <!-- ========== EVENT HERO ========== -->
+  <div class="event-detail-hero" id="eventHero">
+    <div class="overlay"></div>
+    <div class="content">
+      <a href="events.html" style="display:inline-flex;align-items:center;gap:8px;color:rgba(255,255,255,0.7);font-size:0.9rem;margin-bottom:16px;">
+        <i class="fas fa-arrow-left"></i> Back to Events
+      </a>
+      <h1 id="eventTitle">Loading...</h1>
+      <div class="meta-row" id="eventMeta"></div>
+    </div>
+  </div>
+
+  <!-- ========== EVENT CONTENT ========== -->
+  <div class="event-detail-content" id="eventContent">
+    <!-- Main Content -->
+    <div class="event-detail-main">
+      <div id="eventDescription"></div>
+      <div id="eventItinerary"></div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="event-detail-sidebar">
+      <div class="sticky-card" id="eventSidebar"></div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom" style="border:none;padding:20px 0;">
+        <p>&copy; 2026 TourVista. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Registration Modal -->
+  <div class="modal-overlay" id="registerModal">
+    <div class="modal" style="max-width:520px;">
+      <div class="modal-header">
+        <h2>Register for Event</h2>
+        <button class="modal-close" onclick="closeModal('registerModal')"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body">
+        <div style="text-align:center;margin-bottom:24px;">
+          <div style="width:64px;height:64px;border-radius:50%;background:var(--primary-light);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+            <i class="fas fa-ticket-alt" style="font-size:1.5rem;color:var(--primary);"></i>
+          </div>
+          <h3 id="modalEventTitle" style="margin-bottom:4px;"></h3>
+          <p id="modalEventDate" style="color:var(--text-light);font-size:0.9rem;"></p>
+        </div>
+
+        <div style="background:var(--bg);border-radius:var(--radius-md);padding:16px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+            <span style="color:var(--text-light);font-size:0.9rem;">Cost per person</span>
+            <span id="modalCost" style="font-weight:700;color:var(--primary);"></span>
+          </div>
+          <div style="display:flex;justify-content:space-between;">
+            <span style="color:var(--text-light);font-size:0.9rem;">Spots remaining</span>
+            <span id="modalSpots" style="font-weight:700;"></span>
+          </div>
+        </div>
+
+        <!-- Payment Method Selection -->
+        <div style="margin-top:24px;">
+          <label class="form-label" style="font-weight:600;font-size:1rem;margin-bottom:14px;display:block;">
+            <i class="fas fa-wallet" style="margin-right:6px;color:var(--primary);"></i> Pay with Mobile Banking
+          </label>
+          <div class="payment-methods">
+            <label class="payment-method-card" id="bkashCard">
+              <input type="radio" name="paymentMethod" value="bkash" onchange="selectPaymentMethod('bkash')">
+              <div class="payment-method-inner">
+                <div class="payment-logo bkash-logo">
+                  <span style="font-weight:800;font-size:1.1rem;color:#E2136E;">b</span><span style="font-weight:700;font-size:0.85rem;color:#E2136E;">Kash</span>
+                </div>
+                <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;">Mobile Banking</div>
+              </div>
+              <div class="payment-check"><i class="fas fa-check-circle"></i></div>
+            </label>
+            <label class="payment-method-card" id="nagadCard">
+              <input type="radio" name="paymentMethod" value="nagad" onchange="selectPaymentMethod('nagad')">
+              <div class="payment-method-inner">
+                <div class="payment-logo nagad-logo">
+                  <span style="font-weight:800;font-size:1.1rem;color:#F6921E;">N</span><span style="font-weight:700;font-size:0.85rem;color:#F6921E;">agad</span>
+                </div>
+                <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;">Digital Payment</div>
+              </div>
+              <div class="payment-check"><i class="fas fa-check-circle"></i></div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Payment info shown after selecting method -->
+        <div id="paymentInfoSection" style="display:none;margin-top:20px;">
+          <div class="payment-instruction-box" id="paymentInstructions"></div>
+        </div>
+
+        <div class="form-group" style="margin-top:16px;">
+          <label class="form-label">Any special requirements?</label>
+          <textarea class="form-textarea" id="specialNotes" placeholder="Dietary restrictions, medical conditions, etc. (optional)" rows="2"></textarea>
+        </div>
+
+        <label class="form-check" style="margin-top:12px;">
+          <input type="checkbox" id="agreeTerms">
+          <span style="font-size:0.85rem;">I agree to the event terms and conditions</span>
+        </label>
+      </div>
+      <div class="modal-footer" style="flex-direction:column;gap:8px;">
+        <button class="btn btn-primary btn-lg" id="payAndRegisterBtn" style="width:100%;" onclick="submitPaymentAndRegistration()" disabled>
+          <i class="fas fa-lock" style="margin-right:6px;"></i> Pay & Register — <span id="payBtnAmount"></span>
+        </button>
+        <button class="btn btn-ghost" style="width:100%;" onclick="closeModal('registerModal')">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/chatbot.js"></script>
+
+  <script>
+    let currentEvent = null;
+
+    document.addEventListener('DOMContentLoaded', async function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const eventId = urlParams.get('id');
+      if (!eventId) {
+        window.location.href = 'events.html';
+        return;
+      }
+
+      try {
+        const data = await EventsAPI.getById(eventId);
+        if (!data || !data.event) {
+          window.location.href = 'events.html';
+          return;
+        }
+        currentEvent = data.event;
+        renderEventDetail(currentEvent);
+      } catch (err) {
+        showToast('Event not found', 'error');
+        window.location.href = 'events.html';
+      }
+    });
+
+    async function renderEventDetail(event) {
+      // Hero — use image if available, otherwise gradient
+      var hero = document.getElementById('eventHero');
+      if (event.image_url) {
+        var imgUrl = getEventImageUrl(event.image_url);
+        hero.style.background = 'url(' + imgUrl + ') center/cover no-repeat';
+      } else {
+        hero.style.background = event.gradient;
+      }
+      document.getElementById('eventTitle').textContent = event.title;
+      document.getElementById('eventMeta').innerHTML = `
+        <span><i class="fas fa-calendar"></i> ${formatDate(event.start_date)} — ${formatDate(event.end_date)}</span>
+        <span><i class="fas fa-map-marker-alt"></i> ${event.destination || 'TBA'}</span>
+        <span><i class="fas fa-tag"></i> ${getCategoryLabel(event.category)}</span>
+        ${getStatusBadge(event.status)}
+      `;
+
+      // Description
+      document.getElementById('eventDescription').innerHTML = `
+        <h2>About This Event</h2>
+        <p>${event.description || ''}</p>
+
+        <h2 style="margin-top:32px;">Destination</h2>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
+          <div style="width:48px;height:48px;border-radius:var(--radius);background:var(--primary-light);display:flex;align-items:center;justify-content:center;">
+            <i class="fas fa-map-marker-alt" style="color:var(--primary);font-size:1.2rem;"></i>
+          </div>
+          <div>
+            <div style="font-weight:600;">${event.destination || 'TBA'}</div>
+            <div style="font-size:0.85rem;color:var(--text-light);">${formatDate(event.start_date)} — ${formatDate(event.end_date)}</div>
+          </div>
+        </div>
+      `;
+
+      // Itinerary
+      if (event.itinerary && event.itinerary.length) {
+        document.getElementById('eventItinerary').innerHTML = `
+          <h2 style="margin-top:32px;">Itinerary</h2>
+          ${event.itinerary.map(item => `
+            <div class="itinerary-item">
+              <div class="itinerary-day">Day ${item.day_number}</div>
+              <div class="itinerary-content">
+                <h4>${item.title}</h4>
+                <p>${item.description || ''}</p>
+              </div>
+            </div>
+          `).join('')}
+        `;
+      }
+
+      // Sidebar
+      const spotsLeft = event.participant_limit - event.current_participants;
+      const fillPercent = (event.current_participants / event.participant_limit) * 100;
+
+      document.getElementById('eventSidebar').innerHTML = `
+        <div class="price-display">
+          <div class="amount">${formatCurrency(event.cost)}</div>
+          <div class="per">per person</div>
+        </div>
+
+        <div class="sidebar-info">
+          <div class="sidebar-info-item">
+            <span class="label"><i class="fas fa-calendar" style="margin-right:8px;color:var(--primary);"></i> Start Date</span>
+            <span class="value">${formatDate(event.start_date)}</span>
+          </div>
+          <div class="sidebar-info-item">
+            <span class="label"><i class="fas fa-calendar-check" style="margin-right:8px;color:var(--primary);"></i> End Date</span>
+            <span class="value">${formatDate(event.end_date)}</span>
+          </div>
+          <div class="sidebar-info-item">
+            <span class="label"><i class="fas fa-signal" style="margin-right:8px;color:var(--primary);"></i> Difficulty</span>
+            <span class="value">${event.difficulty || 'Moderate'}</span>
+          </div>
+          <div class="sidebar-info-item">
+            <span class="label"><i class="fas fa-users" style="margin-right:8px;color:var(--primary);"></i> Group Size</span>
+            <span class="value">${event.participant_limit} max</span>
+          </div>
+          <div class="sidebar-info-item">
+            <span class="label"><i class="fas fa-tag" style="margin-right:8px;color:var(--primary);"></i> Category</span>
+            <span class="value">${getCategoryLabel(event.category)}</span>
+          </div>
+          ${event.meeting_point ? `
+          <div class="sidebar-info-item">
+            <span class="label"><i class="fas fa-map-pin" style="margin-right:8px;color:var(--primary);"></i> Meeting Point</span>
+            <span class="value">${event.meeting_point}</span>
+          </div>
+          ` : ''}
+        </div>
+
+        <div style="margin-bottom:20px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+            <span style="font-size:0.85rem;font-weight:600;">${event.current_participants} registered</span>
+            <span style="font-size:0.85rem;color:var(--text-muted);">${spotsLeft} spots left</span>
+          </div>
+          <div class="availability-bar">
+            <div class="fill" style="width:${fillPercent}%;background:${fillPercent >= 100 ? 'var(--danger)' : fillPercent >= 75 ? 'var(--warning)' : 'var(--success)'}"></div>
+          </div>
+          <div class="availability-text">${fillPercent >= 100 ? 'This event is full' : `${spotsLeft} spots remaining`}</div>
+        </div>
+
+        <div id="registrationButtonArea">
+        ${event.status === 'open' && spotsLeft > 0 ? `
+          <button class="btn btn-primary btn-lg" style="width:100%;margin-bottom:12px;" onclick="openRegistrationModal()">
+            <i class="fas fa-ticket-alt"></i> Register Now
+          </button>
+        ` : event.status === 'open' && spotsLeft <= 0 ? `
+          <button class="btn btn-warning btn-lg" style="width:100%;margin-bottom:12px;" onclick="openRegistrationModal()">
+            <i class="fas fa-clock"></i> Join Waitlist (Pay First)
+          </button>
+        ` : `
+          <button class="btn btn-lg" style="width:100%;margin-bottom:12px;background:var(--border);color:var(--text-muted);cursor:not-allowed;" disabled>
+            <i class="fas fa-lock"></i> Registration Closed
+          </button>
+        `}
+        </div>
+
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-outline wishlist-btn" id="wishlistBtn" style="flex:1;" onclick="toggleWishlist()">
+            <i class="far fa-heart"></i> Save
+          </button>
+          <button class="btn btn-outline" style="flex:1;" onclick="shareEvent()">
+            <i class="fas fa-share-alt"></i> Share
+          </button>
+        </div>
+
+        <div style="margin-top:20px;padding:16px;background:var(--bg);border-radius:var(--radius);text-align:center;">
+          <i class="fas fa-shield-alt" style="color:var(--success);font-size:1.2rem;margin-bottom:8px;"></i>
+          <p style="font-size:0.8rem;color:var(--text-light);line-height:1.5;">This event is verified and approved by our team. Your registration will be reviewed within 24 hours.</p>
+        </div>
+      `;
+
+      // Check wishlist state from API
+      if (Auth.isLoggedIn()) {
+        try {
+          var wishData = await WishlistAPI.check(event.id);
+          if (wishData && wishData.inWishlist) {
+            var wBtn = document.getElementById('wishlistBtn');
+            if (wBtn) {
+              wBtn.querySelector('i').className = 'fas fa-heart';
+              wBtn.style.color = 'var(--danger)';
+              wBtn.style.borderColor = 'var(--danger)';
+            }
+          }
+        } catch(e) { /* ignore */ }
+
+        // Check if user already registered for this event
+        try {
+          var regData = await RegistrationsAPI.checkStatus(event.id);
+          if (regData && regData.registered) {
+            updateRegistrationButton(regData.registration.status, regData.registration.payment_status);
+          }
+        } catch(e) { /* ignore */ }
+      }
+
+      document.title = `${event.title} — TourVista`;
+    }
+
+    function updateRegistrationButton(status, paymentStatus) {
+      const area = document.getElementById('registrationButtonArea');
+      if (!area) return;
+
+      const statusConfig = {
+        pending: {
+          icon: 'fas fa-clock',
+          label: 'Registration Pending',
+          sublabel: 'Your registration is awaiting admin approval',
+          bg: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
+          color: '#92400e',
+          borderColor: '#f59e0b'
+        },
+        approved: {
+          icon: 'fas fa-check-circle',
+          label: 'Registration Approved',
+          sublabel: 'You\'re all set! See you at the event',
+          bg: 'linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)',
+          color: '#065f46',
+          borderColor: '#10b981'
+        },
+        rejected: {
+          icon: 'fas fa-times-circle',
+          label: 'Registration Rejected',
+          sublabel: 'Your registration was not approved',
+          bg: 'linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)',
+          color: '#991b1b',
+          borderColor: '#ef4444'
+        },
+        waitlisted: {
+          icon: 'fas fa-hourglass-half',
+          label: 'On Waitlist',
+          sublabel: 'You\'ll be notified if a spot opens up',
+          bg: 'linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%)',
+          color: '#3730a3',
+          borderColor: '#6366f1'
+        }
+      };
+
+      const cfg = statusConfig[status] || statusConfig.pending;
+
+      area.innerHTML = `
+        <div style="width:100%;margin-bottom:12px;padding:16px 20px;border-radius:var(--radius-md);background:${cfg.bg};border:1.5px solid ${cfg.borderColor};text-align:center;">
+          <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:6px;">
+            <i class="${cfg.icon}" style="font-size:1.3rem;color:${cfg.color};"></i>
+            <span style="font-weight:700;font-size:1rem;color:${cfg.color};">${cfg.label}</span>
+          </div>
+          <p style="font-size:0.82rem;color:${cfg.color};opacity:0.85;margin:0;">${cfg.sublabel}</p>
+          ${paymentStatus === 'paid' ? `<p style="font-size:0.75rem;color:${cfg.color};opacity:0.7;margin:6px 0 0;"><i class="fas fa-receipt" style="margin-right:4px;"></i> Payment received</p>` : ''}
+        </div>
+        ${status === 'rejected' ? `
+          <a href="my-events.html" class="btn btn-outline" style="width:100%;margin-bottom:12px;text-decoration:none;">
+            <i class="fas fa-list"></i> View My Events
+          </a>
+        ` : status === 'approved' ? `
+          <a href="my-events.html" class="btn btn-primary btn-lg" style="width:100%;margin-bottom:12px;text-decoration:none;">
+            <i class="fas fa-list"></i> View My Events
+          </a>
+        ` : ''}
+      `;
+    }
+
+    function openRegistrationModal() {
+      if (!Auth.isLoggedIn()) {
+        showToast('Please log in to register for events', 'warning');
+        setTimeout(() => { window.location.href = 'login.html'; }, 1000);
+        return;
+      }
+      if (!currentEvent) return;
+      document.getElementById('modalEventTitle').textContent = currentEvent.title;
+      document.getElementById('modalEventDate').textContent = `${formatDate(currentEvent.start_date)} — ${formatDate(currentEvent.end_date)}`;
+      document.getElementById('modalCost').textContent = formatCurrency(currentEvent.cost);
+      document.getElementById('modalSpots').textContent = `${currentEvent.participant_limit - currentEvent.current_participants} left`;
+      document.getElementById('payBtnAmount').textContent = formatCurrency(currentEvent.cost);
+
+      // Reset form
+      document.querySelectorAll('input[name="paymentMethod"]').forEach(r => r.checked = false);
+      document.querySelectorAll('.payment-method-card').forEach(c => c.classList.remove('selected'));
+      document.getElementById('paymentInfoSection').style.display = 'none';
+      document.getElementById('specialNotes').value = '';
+      document.getElementById('agreeTerms').checked = false;
+      document.getElementById('payAndRegisterBtn').disabled = true;
+
+      openModal('registerModal');
+    }
+
+    let selectedPaymentMethod = null;
+
+    function selectPaymentMethod(method) {
+      selectedPaymentMethod = method;
+      document.querySelectorAll('.payment-method-card').forEach(c => c.classList.remove('selected'));
+      document.getElementById(method + 'Card').classList.add('selected');
+      document.getElementById('paymentInfoSection').style.display = 'block';
+      document.getElementById('payAndRegisterBtn').disabled = false;
+
+      const instructions = document.getElementById('paymentInstructions');
+
+      if (method === 'bkash') {
+        instructions.innerHTML = `
+          <div class="payment-instruction-header" style="color:#E2136E;">
+            <i class="fas fa-info-circle"></i> bKash Payment
+          </div>
+          <p style="font-size:0.85rem;color:var(--text);line-height:1.6;margin:8px 0 0;">
+            You'll be redirected to the <strong>official bKash payment page</strong> to complete payment securely.
+            Enter your bKash wallet number, OTP, and PIN on the bKash page. After payment, you'll be brought back here automatically.
+          </p>
+        `;
+      } else {
+        instructions.innerHTML = `
+          <div class="payment-instruction-header" style="color:#F6921E;">
+            <i class="fas fa-info-circle"></i> Nagad Payment
+          </div>
+          <p style="font-size:0.85rem;color:var(--text);line-height:1.6;margin:8px 0 0;">
+            You'll be redirected to the <strong>official Nagad payment page</strong> to complete payment securely.
+            Enter your Nagad wallet number and PIN on the Nagad page. After payment, you'll be brought back here automatically.
+          </p>
+        `;
+      }
+    }
+
+    async function submitPaymentAndRegistration() {
+      if (!Auth.isLoggedIn()) {
+        showToast('Please log in to register', 'warning');
+        setTimeout(() => { window.location.href = 'login.html'; }, 1000);
+        return;
+      }
+
+      const agreeBox = document.getElementById('agreeTerms');
+      if (!agreeBox.checked) {
+        showToast('Please agree to the terms and conditions', 'warning');
+        return;
+      }
+
+      if (!selectedPaymentMethod) {
+        showToast('Please select a payment method (bKash or Nagad)', 'warning');
+        return;
+      }
+
+      const btn = document.getElementById('payAndRegisterBtn');
+      const originalText = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Redirecting to ' + (selectedPaymentMethod === 'bkash' ? 'bKash' : 'Nagad') + '...';
+
+      try {
+        const notes = document.getElementById('specialNotes').value.trim();
+        const result = await PaymentsAPI.initiate({
+          event_id: currentEvent.id,
+          payment_method: selectedPaymentMethod,
+          emergency_contact: '',
+          notes: notes || null
+        });
+
+        // Redirect to bKash/Nagad payment page
+        if (result.redirectURL) {
+          window.location.href = result.redirectURL;
+        } else {
+          throw new Error('No redirect URL received from payment gateway');
+        }
+      } catch (err) {
+        showToast(err.message || 'Payment initiation failed. Please try again.', 'error');
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    }
+
+    // Keep legacy function for waitlist
+    async function submitRegistration() {
+      if (!Auth.isLoggedIn()) {
+        showToast('Please log in to register', 'warning');
+        setTimeout(() => { window.location.href = 'login.html'; }, 1000);
+        return;
+      }
+
+      try {
+        await RegistrationsAPI.register(currentEvent.id, {});
+        showToast('Added to waitlist!', 'success');
+      } catch (err) {
+        showToast(err.message || 'Registration failed', 'error');
+      }
+    }
+
+    function shareEvent() {
+      if (navigator.share) {
+        navigator.share({ title: currentEvent.title, text: currentEvent.description, url: window.location.href });
+      } else {
+        navigator.clipboard.writeText(window.location.href);
+        showToast('Link copied to clipboard!', 'success');
+      }
+    }
+
+    async function toggleWishlist() {
+      if (!Auth.isLoggedIn()) {
+        showToast('Please log in to save events', 'warning');
+        return;
+      }
+      if (!currentEvent) return;
+      try {
+        var data = await WishlistAPI.toggle(currentEvent.id);
+        var btn = document.getElementById('wishlistBtn');
+        if (btn) {
+          var icon = btn.querySelector('i');
+          if (data.inWishlist) {
+            icon.className = 'fas fa-heart';
+            btn.style.color = 'var(--danger)';
+            btn.style.borderColor = 'var(--danger)';
+            showToast('Added to wishlist!', 'success');
+          } else {
+            icon.className = 'far fa-heart';
+            btn.style.color = '';
+            btn.style.borderColor = '';
+            showToast('Removed from wishlist', 'info');
+          }
+        }
+      } catch (err) {
+        showToast('Failed to update wishlist', 'error');
+      }
+    }
+  </script>
+</body>
+</html>

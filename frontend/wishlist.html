@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Wishlist — TourVista</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- ========== HEADER ========== -->
+  <header class="header" id="header">
+    <div class="header-inner">
+      <a href="index.html" class="logo">
+        <i class="fas fa-globe-americas"></i>
+        <span>TourVista</span>
+      </a>
+      <nav class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="events.html">Events</a>
+        <a href="my-events.html">My Events</a>
+      </nav>
+      <div class="nav-auth">
+        <a href="login.html" class="btn btn-ghost">Log In</a>
+        <a href="register.html" class="btn btn-primary">Sign Up</a>
+      </div>
+      <button class="mobile-toggle"><i class="fas fa-bars"></i></button>
+    </div>
+    <div class="mobile-nav" id="mobileNav">
+      <a href="index.html">Home</a>
+      <a href="events.html">Events</a>
+      <a href="my-events.html">My Events</a>
+    </div>
+  </header>
+
+  <!-- ========== DASHBOARD LAYOUT ========== -->
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-user">
+          <div class="sidebar-avatar">--</div>
+          <div class="sidebar-user-info">
+            <h4>Loading...</h4>
+            <p>Participant</p>
+          </div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="sidebar-nav-group">
+          <div class="sidebar-nav-label">Menu</div>
+          <a href="my-events.html"><i class="fas fa-calendar-alt"></i> My Events</a>
+          <a href="events.html"><i class="fas fa-compass"></i> Browse Events</a>
+          <a href="wishlist.html" class="active"><i class="fas fa-heart"></i> Wishlist</a>
+          <a href="profile.html"><i class="fas fa-user"></i> My Profile</a>
+          <a href="notifications.html"><i class="fas fa-bell"></i> Notifications <span class="nav-badge" id="notifBadge">0</span></a>
+          <a href="settings.html"><i class="fas fa-cog"></i> Settings</a>
+        </div>
+        <div class="sidebar-nav-group" style="margin-top:16px;">
+          <div class="sidebar-nav-label">Account</div>
+          <a href="#" onclick="event.preventDefault(); Auth.logout();"><i class="fas fa-sign-out-alt"></i> Log Out</a>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="dash-content">
+      <div class="dash-header">
+        <div>
+          <h1><i class="fas fa-heart" style="color:var(--danger);margin-right:8px;"></i>My Wishlist</h1>
+          <p>Events you've saved for later</p>
+        </div>
+        <div style="display:flex;gap:12px;align-items:center;">
+          <span class="wishlist-count-badge" id="wishlistCount">0 saved</span>
+          <button class="btn btn-outline btn-sm" id="clearAllBtn" onclick="clearWishlist()" style="display:none;">
+            <i class="fas fa-trash-alt"></i> Clear All
+          </button>
+        </div>
+      </div>
+
+      <!-- Wishlist Grid -->
+      <div class="wishlist-grid" id="wishlistGrid"></div>
+
+      <!-- Empty State -->
+      <div class="empty-state hidden" id="emptyWishlist">
+        <i class="fas fa-heart" style="color:var(--text-muted);"></i>
+        <h3>Your wishlist is empty</h3>
+        <p>Browse events and tap the heart icon to save events you're interested in.</p>
+        <a href="events.html" class="btn btn-primary" style="margin-top:16px;">
+          <i class="fas fa-compass"></i> Browse Events
+        </a>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/chatbot.js"></script>
+
+  <script>
+    // Require login
+    if (!Auth.isLoggedIn()) {
+      window.location.href = 'login.html';
+    }
+
+    document.addEventListener('DOMContentLoaded', async function() {
+      // Update sidebar with real user info
+      const user = Auth.getUser();
+      if (user) {
+        document.querySelectorAll('.sidebar-avatar').forEach(el => el.innerHTML = getAvatarHtml(user, 42, '1rem'));
+        document.querySelectorAll('.sidebar-user-info h4').forEach(el => el.textContent = `${user.first_name} ${user.last_name}`);
+      }
+      await renderWishlist();
+    });
+
+    async function renderWishlist() {
+      const grid = document.getElementById('wishlistGrid');
+      const empty = document.getElementById('emptyWishlist');
+      const countBadge = document.getElementById('wishlistCount');
+      const clearBtn = document.getElementById('clearAllBtn');
+
+      try {
+        const data = await WishlistAPI.getAll();
+        const items = data.wishlist || [];
+
+        countBadge.textContent = items.length + (items.length === 1 ? ' saved' : ' saved');
+        clearBtn.style.display = items.length > 0 ? 'inline-flex' : 'none';
+
+        if (items.length === 0) {
+          grid.innerHTML = '';
+          empty.classList.remove('hidden');
+          return;
+        }
+
+        empty.classList.add('hidden');
+
+        grid.innerHTML = items.map(ev => {
+          const gradient = ev.gradient || 'background:linear-gradient(135deg,#667eea,#764ba2)';
+          const icon = ev.icon || 'fas fa-globe-americas';
+          const title = ev.title || 'Untitled Event';
+          const destination = ev.destination || 'TBA';
+          const startDate = ev.start_date ? formatDate(ev.start_date) : 'TBA';
+          const cost = ev.cost ? formatCurrency(ev.cost) : 'Free';
+          const eventId = ev.id;
+
+          return `
+            <div class="wishlist-card" id="wishlist-card-${eventId}">
+              <div class="wishlist-card-img">
+                ${ev.image_url
+                  ? '<img src="' + getEventImageUrl(ev.image_url) + '" alt="' + title + '" style="width:100%;height:100%;object-fit:cover;">'
+                  : '<div class="placeholder-img" style="' + gradient + ';"><i class="' + icon + '" style="color:white;font-size:2rem;"></i></div>'
+                }
+                <button class="wishlist-remove-btn" onclick="removeFromWishlist(${eventId})" title="Remove from wishlist">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+              <div class="wishlist-card-body">
+                <h3 class="wishlist-card-title">${title}</h3>
+                <div class="wishlist-card-meta">
+                  <span><i class="fas fa-map-marker-alt"></i> ${destination}</span>
+                  <span><i class="fas fa-calendar"></i> ${startDate}</span>
+                </div>
+                <div class="wishlist-card-footer">
+                  <span class="wishlist-card-price">${cost}<small>/person</small></span>
+                  <a href="event-detail.html?id=${eventId}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-eye"></i> View Details
+                  </a>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        console.error('Failed to load wishlist:', err);
+        grid.innerHTML = '';
+        empty.classList.remove('hidden');
+      }
+    }
+
+    async function removeFromWishlist(eventId) {
+      try {
+        await WishlistAPI.remove(eventId);
+        const card = document.getElementById('wishlist-card-' + eventId);
+        if (card) {
+          card.style.transition = 'all 0.3s ease';
+          card.style.opacity = '0';
+          card.style.transform = 'scale(0.9)';
+          setTimeout(async () => {
+            await renderWishlist();
+            showToast('Removed from wishlist', 'info');
+          }, 300);
+        } else {
+          await renderWishlist();
+          showToast('Removed from wishlist', 'info');
+        }
+      } catch (err) {
+        showToast('Failed to remove from wishlist', 'error');
+      }
+    }
+
+    async function clearWishlist() {
+      if (!confirm('Remove all events from your wishlist?')) return;
+      try {
+        await WishlistAPI.clearAll();
+        await renderWishlist();
+        showToast('Wishlist cleared', 'info');
+      } catch (err) {
+        showToast('Failed to clear wishlist', 'error');
+      }
+    }
+  </script>
+</body>
+</html>

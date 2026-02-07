@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chatbot Monitor — TourVista Admin</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body data-page="admin-chatbot">
+
+  <!-- Header -->
+  <header class="header" id="header">
+    <div class="header-inner">
+      <div style="display:flex;align-items:center;gap:16px;">
+        <a href="../index.html" class="logo"><i class="fas fa-globe-americas"></i><span>TourVista</span></a>
+        <span class="badge badge-info" style="font-size:0.7rem;">ADMIN</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <a href="notifications.html" class="btn btn-icon btn-ghost" style="position:relative;" title="Notifications">
+          <i class="fas fa-bell"></i>
+          <span class="admin-notif-dot" style="position:absolute;top:4px;right:4px;width:8px;height:8px;border-radius:50%;background:var(--danger);display:none;"></span>
+        </a>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="admin-header-avatar" style="width:36px;height:36px;border-radius:50%;overflow:hidden;"></div>
+          <span class="admin-header-name" style="font-weight:600;font-size:0.85rem;">Admin</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-user">
+          <div class="sidebar-avatar admin-sidebar-avatar">--</div>
+          <div class="sidebar-user-info"><h4 class="admin-sidebar-name">Loading...</h4><p>Administrator</p></div>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="sidebar-nav-group">
+          <div class="sidebar-nav-label">Overview</div>
+          <a href="dashboard.html"><i class="fas fa-chart-pie"></i> Dashboard</a>
+        </div>
+        <div class="sidebar-nav-group">
+          <div class="sidebar-nav-label">Management</div>
+          <a href="events.html"><i class="fas fa-calendar-alt"></i> Events</a>
+          <a href="approvals.html"><i class="fas fa-user-check"></i> Approvals <span class="admin-pending-badge nav-badge">0</span></a>
+          <a href="users.html"><i class="fas fa-users"></i> Users</a>
+        </div>
+        <div class="sidebar-nav-group">
+          <div class="sidebar-nav-label">Tools</div>
+          <a href="chatbot.html" class="active"><i class="fas fa-robot"></i> Chatbot Monitor</a>
+          <a href="settings.html"><i class="fas fa-cog"></i> Settings</a>
+        </div>
+        <div class="sidebar-nav-group" style="margin-top:16px;">
+          <a href="#" onclick="event.preventDefault(); Auth.logout();"><i class="fas fa-sign-out-alt"></i> Log Out</a>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="dash-content">
+      <div class="dash-header">
+        <div>
+          <h1>Chatbot Monitor</h1>
+          <p>Track chatbot conversations and performance</p>
+        </div>
+        <div style="display:flex;gap:12px;">
+          <span class="badge badge-success"><i class="fas fa-circle" style="font-size:0.5rem;"></i> Bot Online</span>
+        </div>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="stats-grid" style="grid-template-columns: repeat(4, 1fr);">
+        <div class="stat-card">
+          <div class="stat-icon blue"><i class="fas fa-comments"></i></div>
+          <div class="stat-info">
+            <h3>127</h3>
+            <p>Total Conversations</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green"><i class="fas fa-comment-dots"></i></div>
+          <div class="stat-info">
+            <h3>489</h3>
+            <p>Messages Sent</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon orange"><i class="fas fa-clock"></i></div>
+          <div class="stat-info">
+            <h3>1.2s</h3>
+            <p>Avg Response Time</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon purple"><i class="fas fa-face-smile"></i></div>
+          <div class="stat-info">
+            <h3>92%</h3>
+            <p>Satisfaction Rate</p>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+        <!-- Top Questions -->
+        <div class="card">
+          <div class="card-header" style="padding:20px 24px;border-bottom:1px solid var(--border);">
+            <h3 style="font-size:1rem;font-weight:700;"><i class="fas fa-chart-bar" style="color:var(--primary);margin-right:8px;"></i> Top Questions</h3>
+          </div>
+          <div class="card-body" style="padding:20px 24px;" id="topQuestions">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+
+        <!-- Recent Conversations -->
+        <div class="card">
+          <div class="card-header" style="padding:20px 24px;border-bottom:1px solid var(--border);">
+            <h3 style="font-size:1rem;font-weight:700;"><i class="fas fa-comments" style="color:var(--primary);margin-right:8px;"></i> Recent Conversations</h3>
+          </div>
+          <div class="card-body" style="padding:12px;" id="conversationList">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Conversation Detail Modal -->
+      <div class="modal" id="conversationModal">
+        <div class="modal-backdrop" onclick="closeModal('conversationModal')"></div>
+        <div class="modal-content" style="max-width:560px;">
+          <div class="modal-header">
+            <h3><i class="fas fa-comments" style="margin-right:8px;"></i> Conversation Detail</h3>
+            <button class="modal-close" onclick="closeModal('conversationModal')"><i class="fas fa-times"></i></button>
+          </div>
+          <div class="modal-body" id="conversationDetail" style="max-height:400px;overflow-y:auto;padding:20px;">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/app.js"></script>
+  <script src="../js/admin.js"></script>
+  <script>
+    if (!Auth.isLoggedIn() || !Auth.isAdmin()) { window.location.href = '../login.html'; }
+  </script>
+</body>
+</html>

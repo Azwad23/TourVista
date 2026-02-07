@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Participant Approvals — TourVista Admin</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body data-page="admin-approvals">
+
+  <!-- Header -->
+  <header class="header" id="header">
+    <div class="header-inner">
+      <div style="display:flex;align-items:center;gap:16px;">
+        <a href="../index.html" class="logo"><i class="fas fa-globe-americas"></i><span>TourVista</span></a>
+        <span class="badge badge-info" style="font-size:0.7rem;">ADMIN</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <a href="notifications.html" class="btn btn-icon btn-ghost" style="position:relative;" title="Notifications">
+          <i class="fas fa-bell"></i>
+          <span class="admin-notif-dot" style="position:absolute;top:4px;right:4px;width:8px;height:8px;border-radius:50%;background:var(--danger);display:none;"></span>
+        </a>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="admin-header-avatar" style="width:36px;height:36px;border-radius:50%;overflow:hidden;"></div>
+          <span class="admin-header-name" style="font-weight:600;font-size:0.85rem;">Admin</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-user">
+          <div class="sidebar-avatar admin-sidebar-avatar">--</div>
+          <div class="sidebar-user-info"><h4 class="admin-sidebar-name">Loading...</h4><p>Administrator</p></div>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="sidebar-nav-group">
+          <div class="sidebar-nav-label">Overview</div>
+          <a href="dashboard.html"><i class="fas fa-chart-pie"></i> Dashboard</a>
+        </div>
+        <div class="sidebar-nav-group">
+          <div class="sidebar-nav-label">Management</div>
+          <a href="events.html"><i class="fas fa-calendar-alt"></i> Events</a>
+          <a href="approvals.html" class="active"><i class="fas fa-user-check"></i> Approvals <span class="admin-pending-badge nav-badge">0</span></a>
+          <a href="users.html"><i class="fas fa-users"></i> Users</a>
+        </div>
+        <div class="sidebar-nav-group">
+          <div class="sidebar-nav-label">Tools</div>
+          <a href="chatbot.html"><i class="fas fa-robot"></i> Chatbot Monitor</a>
+          <a href="settings.html"><i class="fas fa-cog"></i> Settings</a>
+        </div>
+        <div class="sidebar-nav-group" style="margin-top:16px;">
+          <a href="#" onclick="event.preventDefault(); Auth.logout();"><i class="fas fa-sign-out-alt"></i> Log Out</a>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="dash-content">
+      <div class="dash-header">
+        <div>
+          <h1>Participant Approvals</h1>
+          <p>Review and manage event registration requests</p>
+        </div>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr);">
+        <div class="stat-card">
+          <div class="stat-icon orange"><i class="fas fa-clock"></i></div>
+          <div class="stat-info">
+            <h3 id="pendingCount">0</h3>
+            <p>Pending</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
+          <div class="stat-info">
+            <h3 id="approvedCount">0</h3>
+            <p>Approved</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon red"><i class="fas fa-times-circle"></i></div>
+          <div class="stat-info">
+            <h3 id="rejectedCount">0</h3>
+            <p>Rejected</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="toolbar">
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Search by participant or event...">
+        </div>
+        <div class="filters">
+          <button class="filter-chip active" onclick="filterApprovals('all')">All</button>
+          <button class="filter-chip" onclick="filterApprovals('pending')">
+            <span style="width:8px;height:8px;border-radius:50%;background:var(--warning);display:inline-block;"></span> Pending
+          </button>
+          <button class="filter-chip" onclick="filterApprovals('approved')">
+            <span style="width:8px;height:8px;border-radius:50%;background:var(--success);display:inline-block;"></span> Approved
+          </button>
+          <button class="filter-chip" onclick="filterApprovals('rejected')">
+            <span style="width:8px;height:8px;border-radius:50%;background:var(--danger);display:inline-block;"></span> Rejected
+          </button>
+        </div>
+      </div>
+
+      <!-- Approvals Table -->
+      <div class="table-container">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Participant</th>
+              <th>Event</th>
+              <th>Request Date</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="approvalsTable"></tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/app.js"></script>
+  <script src="../js/admin.js"></script>
+  <script>
+    if (!Auth.isLoggedIn() || !Auth.isAdmin()) { window.location.href = '../login.html'; }
+  </script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      updateApprovalCounts();
+    });
+
+    function updateApprovalCounts() {
+      const regs = MockData.registrations;
+      document.getElementById('pendingCount').textContent = regs.filter(r => r.status === 'pending').length;
+      document.getElementById('approvedCount').textContent = regs.filter(r => r.status === 'approved').length;
+      document.getElementById('rejectedCount').textContent = regs.filter(r => r.status === 'rejected').length;
+    }
+
+    // Override approve/reject to also update counts
+    const origApprove = approveRegistration;
+    approveRegistration = function(id) {
+      origApprove(id);
+      updateApprovalCounts();
+    };
+
+    const origReject = rejectRegistration;
+    rejectRegistration = function(id) {
+      origReject(id);
+      updateApprovalCounts();
+    };
+  </script>
+</body>
+</html>

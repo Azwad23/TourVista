@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Profile — TourVista</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- ========== HEADER ========== -->
+  <header class="header" id="header">
+    <div class="header-inner">
+      <a href="index.html" class="logo">
+        <i class="fas fa-globe-americas"></i>
+        <span>TourVista</span>
+      </a>
+      <nav class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="events.html">Events</a>
+        <a href="my-events.html">My Events</a>
+      </nav>
+      <div class="nav-auth">
+        <a href="login.html" class="btn btn-ghost">Log In</a>
+        <a href="register.html" class="btn btn-primary">Sign Up</a>
+      </div>
+      <button class="mobile-toggle"><i class="fas fa-bars"></i></button>
+    </div>
+    <div class="mobile-nav" id="mobileNav">
+      <a href="index.html">Home</a>
+      <a href="events.html">Events</a>
+      <a href="my-events.html">My Events</a>
+      <hr style="border-color:var(--border);margin:8px 0;">
+      <a href="login.html">Log In</a>
+      <a href="register.html">Sign Up</a>
+    </div>
+  </header>
+
+  <!-- ========== DASHBOARD LAYOUT ========== -->
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-user">
+          <div class="sidebar-avatar">--</div>
+          <div class="sidebar-user-info">
+            <h4>Loading...</h4>
+            <p>Participant</p>
+          </div>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="sidebar-nav-group">
+          <div class="sidebar-nav-label">Menu</div>
+          <a href="my-events.html"><i class="fas fa-calendar-alt"></i> My Events</a>
+          <a href="events.html"><i class="fas fa-compass"></i> Browse Events</a>
+          <a href="wishlist.html"><i class="fas fa-heart"></i> Wishlist</a>
+          <a href="profile.html" class="active"><i class="fas fa-user"></i> My Profile</a>
+          <a href="notifications.html"><i class="fas fa-bell"></i> Notifications</a>
+          <a href="settings.html"><i class="fas fa-cog"></i> Settings</a>
+        </div>
+        <div class="sidebar-nav-group" style="margin-top:16px;">
+          <div class="sidebar-nav-label">Account</div>
+          <a href="#" onclick="event.preventDefault(); Auth.logout();"><i class="fas fa-sign-out-alt"></i> Log Out</a>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="dash-content">
+      <div class="dash-header">
+        <div>
+          <h1>My Profile</h1>
+          <p>Manage your account information</p>
+        </div>
+      </div>
+
+      <!-- Profile Avatar Section -->
+      <div class="profile-card">
+        <div style="display:flex;align-items:center;gap:24px;margin-bottom:24px;">
+          <div class="profile-picture-wrapper" id="profilePictureWrapper">
+            <div id="profileAvatar" class="profile-picture-display">--</div>
+            <label for="profilePicInput" class="profile-picture-overlay">
+              <i class="fas fa-camera"></i>
+              <span>Change</span>
+            </label>
+            <input type="file" id="profilePicInput" accept="image/jpeg,image/png,image/gif,image/webp" style="display:none;" onchange="uploadProfilePicture(this)">
+          </div>
+          <div>
+            <h2 id="profileFullName" style="margin-bottom:4px;border:none;padding:0;">Loading...</h2>
+            <p style="color:var(--text-light);" id="profileRole">Participant</p>
+            <p style="color:var(--text-muted);font-size:0.85rem;" id="profileJoined"></p>
+            <button class="btn btn-ghost btn-sm" id="removePicBtn" style="margin-top:8px;display:none;color:var(--danger);font-size:0.8rem;" onclick="removeProfilePicture()">
+              <i class="fas fa-trash-alt"></i> Remove Photo
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Edit Profile Form -->
+      <div class="profile-card">
+        <h2><i class="fas fa-edit" style="margin-right:8px;color:var(--primary);font-size:1rem;"></i>Edit Profile</h2>
+        <form id="profileForm" onsubmit="saveProfile(event)">
+          <div class="profile-form-grid">
+            <div class="form-group">
+              <label class="form-label">First Name</label>
+              <input type="text" class="form-input" id="profFirstName" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Last Name</label>
+              <input type="text" class="form-input" id="profLastName" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email Address</label>
+              <input type="email" class="form-input" id="profEmail" disabled style="background:var(--bg);cursor:not-allowed;">
+              <small style="color:var(--text-muted);font-size:0.78rem;">Email cannot be changed</small>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone Number</label>
+              <input type="tel" class="form-input" id="profPhone" placeholder="+8801XXXXXXXXX" pattern="\+880\d{10}" title="Phone must start with +880 followed by 10 digits">
+              <small style="color:var(--text-muted);font-size:0.78rem;">Format: +8801XXXXXXXXX</small>
+            </div>
+          </div>
+          <div style="margin-top:20px;display:flex;gap:12px;justify-content:flex-end;">
+            <button type="button" class="btn btn-ghost" onclick="loadProfile()">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="saveProfileBtn">
+              <i class="fas fa-save"></i> Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Change Password -->
+      <div class="profile-card">
+        <h2><i class="fas fa-lock" style="margin-right:8px;color:var(--primary);font-size:1rem;"></i>Change Password</h2>
+        <form id="passwordForm" onsubmit="changePassword(event)">
+          <div class="profile-form-grid">
+            <div class="form-group">
+              <label class="form-label">Current Password</label>
+              <input type="password" class="form-input" id="currentPassword" required autocomplete="current-password">
+            </div>
+            <div class="form-group">
+              <label class="form-label">New Password</label>
+              <input type="password" class="form-input" id="newPassword" required autocomplete="new-password" minlength="6">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Confirm New Password</label>
+              <input type="password" class="form-input" id="confirmPassword" required autocomplete="new-password" minlength="6">
+            </div>
+          </div>
+          <div style="margin-top:20px;display:flex;justify-content:flex-end;">
+            <button type="submit" class="btn btn-primary" id="changePwdBtn">
+              <i class="fas fa-key"></i> Change Password
+            </button>
+          </div>
+        </form>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/chatbot.js"></script>
+
+  <script>
+    // Require login
+    if (!Auth.isLoggedIn()) {
+      window.location.href = 'login.html';
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      loadProfile();
+    });
+
+    function loadProfile() {
+      var user = Auth.getUser();
+      if (!user) return;
+
+      var initials = (user.avatar || (user.first_name[0] + user.last_name[0])).toUpperCase();
+      var fullName = user.first_name + ' ' + user.last_name;
+
+      // Sidebar
+      document.querySelectorAll('.sidebar-avatar').forEach(function(el) { el.innerHTML = getAvatarHtml(user, 42, '1rem'); });
+      document.querySelectorAll('.sidebar-user-info h4').forEach(function(el) { el.textContent = fullName; });
+      document.querySelectorAll('.sidebar-user-info p').forEach(function(el) { el.textContent = user.role === 'admin' ? 'Administrator' : 'Participant'; });
+
+      // Profile header avatar
+      var avatarEl = document.getElementById('profileAvatar');
+      if (user.profile_picture) {
+        var imgUrl = user.profile_picture;
+        // If relative URL, ensure it works from any origin
+        if (imgUrl.startsWith('/')) {
+          imgUrl = (window.location.port === '3000' ? '' : 'http://localhost:3000') + imgUrl;
+        }
+        avatarEl.innerHTML = '<img src="' + imgUrl + '" alt="Profile">';
+        avatarEl.className = 'profile-picture-display has-image';
+        document.getElementById('removePicBtn').style.display = 'inline-flex';
+      } else {
+        avatarEl.innerHTML = initials;
+        avatarEl.className = 'profile-picture-display';
+        document.getElementById('removePicBtn').style.display = 'none';
+      }
+
+      document.getElementById('profileFullName').textContent = fullName;
+      document.getElementById('profileRole').textContent = user.role === 'admin' ? 'Administrator' : 'Participant';
+      document.getElementById('profileJoined').textContent = user.created_at ? 'Member since ' + formatDate(user.created_at) : '';
+
+      // Form
+      document.getElementById('profFirstName').value = user.first_name || '';
+      document.getElementById('profLastName').value = user.last_name || '';
+      document.getElementById('profEmail').value = user.email || '';
+      document.getElementById('profPhone').value = user.phone || '';
+    }
+
+    async function saveProfile(e) {
+      e.preventDefault();
+      var btn = document.getElementById('saveProfileBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+      var phoneVal = document.getElementById('profPhone').value.trim();
+      if (phoneVal && !/^\+880\d{10}$/.test(phoneVal)) {
+        showToast('Phone must start with +880 followed by 10 digits', 'error');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
+        return;
+      }
+
+      try {
+        var data = await UsersAPI.updateProfile({
+          first_name: document.getElementById('profFirstName').value.trim(),
+          last_name: document.getElementById('profLastName').value.trim(),
+          phone: phoneVal
+        });
+
+        if (data && data.user) {
+          Auth.setUser(data.user);
+          loadProfile();
+          initAuthNav(); // Update navbar
+          showToast('Profile updated successfully!', 'success');
+        }
+      } catch (err) {
+        showToast(err.message || 'Failed to update profile', 'error');
+      }
+
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
+    }
+
+    async function changePassword(e) {
+      e.preventDefault();
+
+      var newPwd = document.getElementById('newPassword').value;
+      var confirmPwd = document.getElementById('confirmPassword').value;
+
+      if (newPwd !== confirmPwd) {
+        showToast('New passwords do not match', 'error');
+        return;
+      }
+
+      if (newPwd.length < 6) {
+        showToast('Password must be at least 6 characters', 'error');
+        return;
+      }
+
+      var btn = document.getElementById('changePwdBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Changing...';
+
+      try {
+        await UsersAPI.changePassword(
+          document.getElementById('currentPassword').value,
+          newPwd
+        );
+        showToast('Password changed successfully!', 'success');
+        document.getElementById('passwordForm').reset();
+      } catch (err) {
+        showToast(err.message || 'Failed to change password', 'error');
+      }
+
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-key"></i> Change Password';
+    }
+
+    async function uploadProfilePicture(input) {
+      var file = input.files[0];
+      if (!file) return;
+
+      // Validate file
+      var allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      if (!allowed.includes(file.type)) {
+        showToast('Please select a valid image (JPG, PNG, GIF, or WebP)', 'error');
+        input.value = '';
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        showToast('Image must be less than 5MB', 'error');
+        input.value = '';
+        return;
+      }
+
+      try {
+        showToast('Uploading profile picture...', 'info');
+        var data = await UsersAPI.uploadProfilePicture(file);
+        if (data && data.user) {
+          Auth.setUser(data.user);
+          loadProfile();
+          updateNavForUser();
+          if (typeof initAuthNav === 'function') initAuthNav();
+          showToast('Profile picture updated!', 'success');
+        }
+      } catch (err) {
+        showToast(err.message || 'Failed to upload picture', 'error');
+      }
+      input.value = '';
+    }
+
+    async function removeProfilePicture() {
+      if (!confirm('Remove your profile picture?')) return;
+      try {
+        var data = await UsersAPI.deleteProfilePicture();
+        if (data && data.user) {
+          Auth.setUser(data.user);
+          loadProfile();
+          updateNavForUser();
+          if (typeof initAuthNav === 'function') initAuthNav();
+          showToast('Profile picture removed', 'success');
+        }
+      } catch (err) {
+        showToast(err.message || 'Failed to remove picture', 'error');
+      }
+    }
+  </script>
+</body>
+</html>

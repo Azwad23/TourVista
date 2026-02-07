@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TourVista — Group Tour & Event Management Platform</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- ========== HEADER ========== -->
+  <header class="header" id="header">
+    <div class="header-inner">
+      <a href="index.html" class="logo">
+        <i class="fas fa-globe-americas"></i>
+        <span>TourVista</span>
+      </a>
+
+      <nav class="nav-links">
+        <a href="index.html" class="active">Home</a>
+        <a href="events.html">Events</a>
+        <a href="my-events.html">My Events</a>
+        <a href="#features">Features</a>
+        <a href="#about">About</a>
+      </nav>
+
+      <div class="nav-auth">
+        <a href="login.html" class="btn btn-ghost">Log In</a>
+        <a href="register.html" class="btn btn-primary">Sign Up</a>
+      </div>
+
+      <button class="mobile-toggle" onclick="initMobileNav()">
+        <i class="fas fa-bars"></i>
+      </button>
+    </div>
+
+    <!-- Mobile Navigation -->
+    <div class="mobile-nav" id="mobileNav">
+      <a href="index.html">Home</a>
+      <a href="events.html">Events</a>
+      <a href="my-events.html">My Events</a>
+      <a href="#features">Features</a>
+      <a href="#about">About</a>
+      <hr style="border-color: var(--border); margin: 8px 0;">
+      <a href="login.html">Log In</a>
+      <a href="register.html" style="color:var(--primary); font-weight:600;">Sign Up</a>
+    </div>
+  </header>
+
+  <!-- ========== HERO SECTION ========== -->
+  <section class="hero">
+    <div class="hero-bg" style="background-image: url('background.jpeg');"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-particles"></div>
+
+    <div class="hero-content">
+      <div class="hero-badge">
+        <i class="fas fa-sparkles"></i>
+        <span>#1 Group Tour Management Platform</span>
+      </div>
+
+      <h1>
+        Explore the World<br>
+        <span class="highlight">Together.</span>
+      </h1>
+
+      <p>
+        Discover curated group tours and events, register with ease, and embark on unforgettable adventures. Your next journey starts here.
+      </p>
+
+      <div class="hero-actions">
+        <a href="events.html" class="btn btn-primary">
+          <i class="fas fa-compass"></i> Explore Events
+        </a>
+        <a href="#how-it-works" class="btn btn-outline">
+          <i class="fas fa-play-circle"></i> How It Works
+        </a>
+      </div>
+
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <h3 data-count="500">0</h3>
+          <p>Happy Travelers</p>
+        </div>
+        <div class="hero-stat">
+          <h3 data-count="50">0</h3>
+          <p>Tours Completed</p>
+        </div>
+        <div class="hero-stat">
+          <h3 data-count="25">0</h3>
+          <p>Destinations</p>
+        </div>
+        <div class="hero-stat">
+          <h3 data-count="99">0</h3>
+          <p>% Satisfaction</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Floating visual cards -->
+    <div class="hero-visual">
+      <div class="floating-card" style="width:200px;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+          <div style="width:40px;height:40px;border-radius:10px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;">
+            <i class="fas fa-mountain"></i>
+          </div>
+          <div>
+            <div style="font-weight:600;font-size:0.9rem;">Mountain Trek</div>
+            <div style="font-size:0.75rem;opacity:0.7;">Mar 15, 2026</div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:0.8rem;opacity:0.7;">18/25 joined</span>
+          <span style="background:rgba(74,222,128,0.2);color:#4ade80;padding:2px 8px;border-radius:20px;font-size:0.7rem;">Open</span>
+        </div>
+      </div>
+
+      <div class="floating-card" style="width:180px;">
+        <div style="text-align:center;">
+          <i class="fas fa-check-circle" style="font-size:2rem;color:#4ade80;margin-bottom:8px;"></i>
+          <div style="font-weight:600;font-size:0.9rem;">Registered!</div>
+          <div style="font-size:0.75rem;opacity:0.7;">Safari Expedition</div>
+        </div>
+      </div>
+
+      <div class="floating-card" style="width:220px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%23dbeafe'/%3E%3Ctext x='16' y='21' text-anchor='middle' font-size='14' fill='%232563eb'%3E⭐%3C/text%3E%3C/svg%3E" alt="" style="width:32px;height:32px;border-radius:50%;">
+          <div>
+            <div style="font-weight:600;font-size:0.85rem;">4.9 Rating</div>
+            <div style="font-size:0.7rem;opacity:0.7;">From 200+ reviews</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:2px;">
+          <i class="fas fa-star" style="color:#fbbf24;font-size:0.8rem;"></i>
+          <i class="fas fa-star" style="color:#fbbf24;font-size:0.8rem;"></i>
+          <i class="fas fa-star" style="color:#fbbf24;font-size:0.8rem;"></i>
+          <i class="fas fa-star" style="color:#fbbf24;font-size:0.8rem;"></i>
+          <i class="fas fa-star-half-alt" style="color:#fbbf24;font-size:0.8rem;"></i>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== POPULAR DESTINATIONS ========== -->
+  <section class="section" id="destinations">
+    <div class="container">
+      <div class="section-title fade-in-on-scroll">
+        <h2>Popular Destinations</h2>
+        <p>Explore breathtaking locations hand-picked by our travel experts</p>
+      </div>
+
+      <div class="destinations-grid fade-in-on-scroll">
+        <div class="destination-card">
+          <div class="destination-img">
+            <img src="Sajek.webp" alt="Sajek Valley">
+            <div class="destination-overlay">
+              <span class="destination-tag"><i class="fas fa-mountain"></i> Hill Station</span>
+            </div>
+          </div>
+          <div class="destination-info">
+            <h3>Sajek Valley</h3>
+            <p>Known as the "Queen of Hills", Sajek offers mesmerizing cloud-kissed landscapes, lush green mountains, and a serene tribal culture experience.</p>
+            <div class="destination-meta">
+              <span><i class="fas fa-map-marker-alt"></i> Rangamati, Bangladesh</span>
+              <a href="events.html" class="btn btn-sm btn-primary">Explore Tours</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="destination-card">
+          <div class="destination-img">
+            <img src="Bandarban.jpg" alt="Bandarban">
+            <div class="destination-overlay">
+              <span class="destination-tag"><i class="fas fa-hiking"></i> Adventure</span>
+            </div>
+          </div>
+          <div class="destination-info">
+            <h3>Bandarban</h3>
+            <p>Home to the highest peaks in Bangladesh, Bandarban is a paradise for trekkers with golden temples, waterfalls, and indigenous villages.</p>
+            <div class="destination-meta">
+              <span><i class="fas fa-map-marker-alt"></i> Chittagong, Bangladesh</span>
+              <a href="events.html" class="btn btn-sm btn-primary">Explore Tours</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="destination-card">
+          <div class="destination-img">
+            <img src="Saint-Martin.webp" alt="Saint Martin's Island">
+            <div class="destination-overlay">
+              <span class="destination-tag"><i class="fas fa-umbrella-beach"></i> Beach</span>
+            </div>
+          </div>
+          <div class="destination-info">
+            <h3>Saint Martin's Island</h3>
+            <p>Bangladesh's only coral island, Saint Martin's is a tropical gem with crystal-clear waters, stunning sunsets, and fresh seafood.</p>
+            <div class="destination-meta">
+              <span><i class="fas fa-map-marker-alt"></i> Cox's Bazar, Bangladesh</span>
+              <a href="events.html" class="btn btn-sm btn-primary">Explore Tours</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== FEATURES ========== -->
+  <section class="section section-alt" id="features">
+    <div class="container">
+      <div class="section-title fade-in-on-scroll">
+        <h2>Why Choose TourVista?</h2>
+        <p>Everything you need for an unforgettable group travel experience, all in one platform.</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card fade-in-on-scroll">
+          <div class="feature-icon">
+            <i class="fas fa-calendar-check"></i>
+          </div>
+          <h3>Easy Event Booking</h3>
+          <p>Browse and register for curated group tours and events in just a few clicks. No hassle, no confusion.</p>
+        </div>
+
+        <div class="feature-card fade-in-on-scroll">
+          <div class="feature-icon" style="background:#dcfce7;color:#16a34a;">
+            <i class="fas fa-shield-alt"></i>
+          </div>
+          <h3>Verified & Approved</h3>
+          <p>Every tour is vetted by our team. Participant registrations go through an approval process for safety.</p>
+        </div>
+
+        <div class="feature-card fade-in-on-scroll">
+          <div class="feature-icon" style="background:#ede9fe;color:#7c3aed;">
+            <i class="fas fa-users-cog"></i>
+          </div>
+          <h3>Centralized Management</h3>
+          <p>Admins manage everything from one powerful dashboard — events, users, approvals, and analytics.</p>
+        </div>
+
+        <div class="feature-card fade-in-on-scroll">
+          <div class="feature-icon" style="background:#ffedd5;color:#ea580c;">
+            <i class="fas fa-robot"></i>
+          </div>
+          <h3>AI-Powered Assistance</h3>
+          <p>Our TourBot AI chatbot is available 24/7 to answer your questions and guide your journey.</p>
+        </div>
+
+        <div class="feature-card fade-in-on-scroll">
+          <div class="feature-icon" style="background:#fce7f3;color:#db2777;">
+            <i class="fas fa-mobile-alt"></i>
+          </div>
+          <h3>Mobile Friendly</h3>
+          <p>Designed for all devices. Browse tours, register, and manage your trips on the go.</p>
+        </div>
+
+        <div class="feature-card fade-in-on-scroll">
+          <div class="feature-icon" style="background:#fef9c3;color:#ca8a04;">
+            <i class="fas fa-chart-line"></i>
+          </div>
+          <h3>Real-Time Tracking</h3>
+          <p>Track your registration status, event updates, and availability in real-time from your dashboard.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== HOW IT WORKS ========== -->
+  <section class="section" id="how-it-works">
+    <div class="container">
+      <div class="section-title fade-in-on-scroll">
+        <h2>How It Works</h2>
+        <p>Three simple steps to your next adventure</p>
+      </div>
+
+      <div class="features-grid" style="max-width:900px; margin:0 auto;">
+        <div class="feature-card fade-in-on-scroll" style="text-align:center; background: linear-gradient(135deg, #dbeafe, #ede9fe); border:none;">
+          <div style="width:64px;height:64px;border-radius:50%;background:var(--primary);color:white;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:1.5rem;font-weight:800;">1</div>
+          <h3>Browse Events</h3>
+          <p>Explore our curated list of group tours, treks, cycling expeditions, and cultural outings.</p>
+        </div>
+
+        <div class="feature-card fade-in-on-scroll" style="text-align:center; background: linear-gradient(135deg, #dcfce7, #d1fae5); border:none;">
+          <div style="width:64px;height:64px;border-radius:50%;background:var(--success);color:white;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:1.5rem;font-weight:800;">2</div>
+          <h3>Register & Get Approved</h3>
+          <p>Sign up for the events you love. Your registration will be reviewed and approved by our team.</p>
+        </div>
+
+        <div class="feature-card fade-in-on-scroll" style="text-align:center; background: linear-gradient(135deg, #fef9c3, #ffedd5); border:none;">
+          <div style="width:64px;height:64px;border-radius:50%;background:var(--accent);color:white;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:1.5rem;font-weight:800;">3</div>
+          <h3>Pack & Go!</h3>
+          <p>Once approved, you'll receive all the details. Just pack your bags and join the adventure!</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== FEATURED EVENTS ========== -->
+  <section class="section" id="featured-events">
+    <div class="container">
+      <div class="section-title fade-in-on-scroll">
+        <h2>Featured Events</h2>
+        <p>Discover our most popular upcoming tours and adventures</p>
+      </div>
+
+      <div class="events-grid" id="featuredEvents"></div>
+
+      <div class="text-center" style="margin-top:40px;">
+        <a href="events.html" class="btn btn-outline btn-lg">
+          View All Events <i class="fas fa-arrow-right" style="margin-left:8px;"></i>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== TESTIMONIALS ========== -->
+  <section class="section section-dark" id="about">
+    <div class="container">
+      <div class="section-title fade-in-on-scroll">
+        <h2 style="color:white;">What Travelers Say</h2>
+        <p style="color:rgba(255,255,255,0.6);">Real stories from our community of adventurers</p>
+      </div>
+
+      <div class="features-grid" style="max-width:1100px;margin:0 auto;">
+        <div class="feature-card fade-in-on-scroll" style="background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.1);">
+          <div style="display:flex;gap:4px;margin-bottom:12px;">
+            <i class="fas fa-star" style="color:#fbbf24;"></i>
+            <i class="fas fa-star" style="color:#fbbf24;"></i>
+            <i class="fas fa-star" style="color:#fbbf24;"></i>
+            <i class="fas fa-star" style="color:#fbbf24;"></i>
+            <i class="fas fa-star" style="color:#fbbf24;"></i>
+          </div>
+          <p style="color:rgba(255,255,255,0.75);font-style:italic;margin-bottom:20px;">"The Mountain Trek was a life-changing experience. Everything was perfectly organized, from the guides to the accommodation. Highly recommended!"</p>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#60a5fa,#a78bfa);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:0.85rem;">SW</div>
+            <div>
+              <div style="color:white;font-weight:600;font-size:0.9rem;">Tafhimul Azwad</div>
+              <div style="color:rgba(255,255,255,0.5);font-size:0.8rem;">Mountain Trek 2025</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="feature-card fade-in-on-scroll" style="background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.1);">
+          <div style="display:flex;gap:4px;margin-bottom:12px;">
+            <i class="fas fa-star" style="color:#fbbf24;"></i>
+            <i class="fas fa-star" style="color:#fbbf24;"></i>
+            <i class="fas fa-star" style="color:#fbbf24;"></i>
+            <i class="fas fa-star" style="color:#fbbf24;"></i>
+            <i class="fas fa-star-half-alt" style="color:#fbbf24;"></i>
+          </div>
+          <p style="color:rgba(255,255,255,0.75);font-style:italic;margin-bottom:20px;">"Cycling along the Mediterranean coast was pure magic. The group was amazing, the views were spectacular, and the food was incredible!"</p>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#f472b6,#c084fc);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:0.85rem;">MC</div>
+            <div>
+              <div style="color:white;font-weight:600;font-size:0.9rem;">Dipto Debnath</div>
+              <div style="color:rgba(255,255,255,0.5);font-size:0.8rem;">Coastal Cycling 2025</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="feature-card fade-in-on-scroll" style="background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.1);">
+          <div style="display:flex;gap:4px;margin-bottom:12px;">
+            <i class="fas fa-star" style="color:#fbbf24;"></i>
+            <i class="fas fa-star" style="color:#fbbf24;"></i>
+            <i class="fas fa-star" style="color:#fbbf24;"></i>
+            <i class="fas fa-star" style="color:#fbbf24;"></i>
+            <i class="fas fa-star" style="color:#fbbf24;"></i>
+          </div>
+          <p style="color:rgba(255,255,255,0.75);font-style:italic;margin-bottom:20px;">"The Japan Cherry Blossom tour exceeded all expectations. The cultural experiences, the temples, and watching the sakura bloom was absolutely magical."</p>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#34d399,#60a5fa);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:0.85rem;">OB</div>
+            <div>
+              <div style="color:white;font-weight:600;font-size:0.9rem;">Tahsin Mahtab</div>
+              <div style="color:rgba(255,255,255,0.5);font-size:0.8rem;">Cherry Blossom 2025</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== CTA SECTION ========== -->
+  <section class="section" style="background: linear-gradient(135deg, var(--primary), #7c3aed); color: white; text-align: center;">
+    <div class="container">
+      <h2 style="color:white; font-size: 2.5rem; margin-bottom: 16px;">Ready for Your Next Adventure?</h2>
+      <p style="color:rgba(255,255,255,0.8); font-size: 1.1rem; max-width:600px; margin: 0 auto 36px;">
+        Join thousands of travelers who have discovered unforgettable experiences through TourVista.
+      </p>
+      <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+        <a href="register.html" class="btn btn-lg" style="background:white;color:var(--primary);font-weight:700;">
+          <i class="fas fa-user-plus"></i> Create Free Account
+        </a>
+        <a href="events.html" class="btn btn-outline btn-lg" style="border-color:rgba(255,255,255,0.4);color:white;">
+          <i class="fas fa-compass"></i> Browse Events
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== FOOTER ========== -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="logo">
+            <i class="fas fa-globe-americas"></i>
+            <span>TourVista</span>
+          </div>
+          <p>The centralized platform for group tour and event management. Connecting travelers with unforgettable experiences worldwide.</p>
+          <div class="footer-social">
+            <a href="https://www.facebook.com/run.faster.1804" target="_blank" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+            <a href="https://www.instagram.com/tafhimul.azwad?igsh=ZHc1d2N5MzVoYmsz" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>
+            <a href="https://www.linkedin.com/in/tafhimul-azwad-922b06322" target="_blank" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <h4>Quick Links</h4>
+          <ul>
+            <li><a href="events.html">Browse Events</a></li>
+            <li><a href="my-events.html">My Events</a></li>
+            <li><a href="#features">Features</a></li>
+            <li><a href="#about">About Us</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Support</h4>
+          <ul>
+            <li><a href="help-center.html">Help Center</a></li>
+            <li><a href="contact.html">Contact Us</a></li>
+            <li><a href="faqs.html">FAQs</a></li>
+            <li><a href="privacy-policy.html">Privacy Policy</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Contact</h4>
+          <ul>
+            <li><a href="#"><i class="fas fa-envelope" style="width:16px;margin-right:8px;"></i>tafhimulazwad@gmail.com</a></li>
+            <li><a href="#"><i class="fas fa-phone" style="width:16px;margin-right:8px;"></i>01815505489</a></li>
+            <li><a href="#"><i class="fas fa-map-marker-alt" style="width:16px;margin-right:8px;"></i>Chattogram,Bangladesh</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>&copy; 2026 TourVista. All rights reserved. Made with <i class="fas fa-heart" style="color:var(--danger);"></i> for adventurers.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/chatbot.js"></script>
+
+  <script>
+    // Render featured events on home page from API
+    document.addEventListener('DOMContentLoaded', async function() {
+      animateCounters();
+      try {
+        var data = await EventsAPI.getAll({ status: 'open', limit: 3 });
+        var events = data.events || [];
+        if (events.length > 0) {
+          await renderEventCards('featuredEvents', events, 3);
+        } else {
+          document.getElementById('featuredEvents').innerHTML = '<p style="text-align:center;color:var(--text-light);grid-column:1/-1;">No events available right now. Check back soon!</p>';
+        }
+      } catch (err) {
+        console.error('Failed to load featured events:', err);
+        document.getElementById('featuredEvents').innerHTML = '<p style="text-align:center;color:var(--text-light);grid-column:1/-1;">Failed to load events. Please try again later.</p>';
+      }
+    });
+  </script>
+</body>
+</html>

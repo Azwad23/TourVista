@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notifications — TourVista Admin</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body data-page="admin-notifications">
+
+  <!-- Header -->
+  <header class="header" id="header">
+    <div class="header-inner">
+      <div style="display:flex;align-items:center;gap:16px;">
+        <a href="../index.html" class="logo"><i class="fas fa-globe-americas"></i><span>TourVista</span></a>
+        <span class="badge badge-info" style="font-size:0.7rem;">ADMIN</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <a href="notifications.html" class="btn btn-icon btn-ghost" style="position:relative;" title="Notifications">
+          <i class="fas fa-bell"></i>
+          <span class="admin-notif-dot" style="position:absolute;top:4px;right:4px;width:8px;height:8px;border-radius:50%;background:var(--danger);display:none;"></span>
+        </a>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="admin-header-avatar" style="width:36px;height:36px;border-radius:50%;overflow:hidden;"></div>
+          <span class="admin-header-name" style="font-weight:600;font-size:0.85rem;">Admin</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-user">
+          <div class="sidebar-avatar">--</div>
+          <div class="sidebar-user-info"><h4>Loading...</h4><p>Administrator</p></div>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="sidebar-nav-group">
+          <div class="sidebar-nav-label">Overview</div>
+          <a href="dashboard.html"><i class="fas fa-chart-pie"></i> Dashboard</a>
+        </div>
+        <div class="sidebar-nav-group">
+          <div class="sidebar-nav-label">Management</div>
+          <a href="events.html"><i class="fas fa-calendar-alt"></i> Events</a>
+          <a href="approvals.html"><i class="fas fa-user-check"></i> Approvals <span class="admin-pending-badge nav-badge">0</span></a>
+          <a href="users.html"><i class="fas fa-users"></i> Users</a>
+        </div>
+        <div class="sidebar-nav-group">
+          <div class="sidebar-nav-label">Tools</div>
+          <a href="chatbot.html"><i class="fas fa-robot"></i> Chatbot Monitor</a>
+          <a href="settings.html"><i class="fas fa-cog"></i> Settings</a>
+        </div>
+        <div class="sidebar-nav-group" style="margin-top:16px;">
+          <a href="#" onclick="event.preventDefault(); Auth.logout();"><i class="fas fa-sign-out-alt"></i> Log Out</a>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="dash-content">
+      <div class="dash-header">
+        <div>
+          <h1>Notifications</h1>
+          <p>Recent registration activity and system alerts</p>
+        </div>
+      </div>
+
+      <!-- Notification Filters -->
+      <div class="tabs" style="margin-bottom:24px;">
+        <button class="tab active" onclick="filterAdminNotifs('all', this)">All</button>
+        <button class="tab" onclick="filterAdminNotifs('pending', this)">Pending</button>
+        <button class="tab" onclick="filterAdminNotifs('approved', this)">Approved</button>
+        <button class="tab" onclick="filterAdminNotifs('rejected', this)">Rejected</button>
+      </div>
+
+      <!-- Notifications List -->
+      <div id="adminNotifList"></div>
+
+      <!-- Empty State -->
+      <div class="empty-state hidden" id="emptyAdminNotifs">
+        <i class="fas fa-bell-slash" style="font-size:3rem;color:var(--text-muted);margin-bottom:16px;"></i>
+        <h3>No notifications</h3>
+        <p>Registration activity will show up here.</p>
+      </div>
+    </main>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/app.js"></script>
+  <script src="../js/admin.js"></script>
+  <script>
+    if (!Auth.isLoggedIn() || !Auth.isAdmin()) { window.location.href = '../login.html'; }
+
+    var allAdminNotifs = [];
+
+    document.addEventListener('DOMContentLoaded', async function() {
+      await loadAdminNotifications();
+    });
+
+    async function loadAdminNotifications() {
+      try {
+        var data = await RegistrationsAPI.getAll();
+        var regs = data.registrations || [];
+
+        allAdminNotifs = regs.map(function(reg) {
+          var icon, iconClass, title, message;
+
+          if (reg.status === 'pending') {
+            icon = 'fa-clock';
+            iconClass = 'warning';
+            title = 'New Registration — Pending Review';
+            message = '<strong>' + (reg.first_name || '') + ' ' + (reg.last_name || '') + '</strong> registered for <strong>' + (reg.event_title || 'Unknown Event') + '</strong>';
+          } else if (reg.status === 'approved') {
+            icon = 'fa-check-circle';
+            iconClass = 'success';
+            title = 'Registration Approved';
+            message = '<strong>' + (reg.first_name || '') + ' ' + (reg.last_name || '') + '</strong> was approved for <strong>' + (reg.event_title || 'Unknown Event') + '</strong>';
+          } else if (reg.status === 'rejected') {
+            icon = 'fa-times-circle';
+            iconClass = 'danger';
+            title = 'Registration Rejected';
+            message = '<strong>' + (reg.first_name || '') + ' ' + (reg.last_name || '') + '</strong> was rejected for <strong>' + (reg.event_title || 'Unknown Event') + '</strong>';
+          } else {
+            icon = 'fa-info-circle';
+            iconClass = 'info';
+            title = 'Registration ' + reg.status;
+            message = '<strong>' + (reg.first_name || '') + ' ' + (reg.last_name || '') + '</strong> — <strong>' + (reg.event_title || 'Unknown Event') + '</strong>';
+          }
+
+          return {
+            id: reg.id,
+            status: reg.status,
+            icon: icon,
+            iconClass: iconClass,
+            title: title,
+            message: message,
+            time: reg.registered_at,
+            eventId: reg.event_id
+          };
+        });
+
+        renderAdminNotifs(allAdminNotifs);
+      } catch(err) {
+        showToast('Failed to load notifications', 'error');
+      }
+    }
+
+    function renderAdminNotifs(notifs) {
+      var container = document.getElementById('adminNotifList');
+      var empty = document.getElementById('emptyAdminNotifs');
+
+      if (notifs.length === 0) {
+        container.innerHTML = '';
+        empty.classList.remove('hidden');
+        return;
+      }
+
+      empty.classList.add('hidden');
+
+      container.innerHTML = notifs.map(function(n) {
+        return '<div class="notification-item" style="cursor:pointer;" onclick="window.location.href=\'approvals.html\'">' +
+          '<div class="notification-icon ' + n.iconClass + '"><i class="fas ' + n.icon + '"></i></div>' +
+          '<div class="notification-content">' +
+            '<h4>' + n.title + '</h4>' +
+            '<p>' + n.message + '</p>' +
+          '</div>' +
+          '<div class="notification-time">' + formatDate(n.time) + '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    function filterAdminNotifs(status, el) {
+      document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+      if (el) el.classList.add('active');
+
+      if (status === 'all') {
+        renderAdminNotifs(allAdminNotifs);
+      } else {
+        renderAdminNotifs(allAdminNotifs.filter(function(n) { return n.status === status; }));
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notifications — TourVista</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- ========== HEADER ========== -->
+  <header class="header" id="header">
+    <div class="header-inner">
+      <a href="index.html" class="logo">
+        <i class="fas fa-globe-americas"></i>
+        <span>TourVista</span>
+      </a>
+      <nav class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="events.html">Events</a>
+        <a href="my-events.html">My Events</a>
+      </nav>
+      <div class="nav-auth">
+        <a href="login.html" class="btn btn-ghost">Log In</a>
+        <a href="register.html" class="btn btn-primary">Sign Up</a>
+      </div>
+      <button class="mobile-toggle"><i class="fas fa-bars"></i></button>
+    </div>
+    <div class="mobile-nav" id="mobileNav">
+      <a href="index.html">Home</a>
+      <a href="events.html">Events</a>
+      <a href="my-events.html">My Events</a>
+      <hr style="border-color:var(--border);margin:8px 0;">
+      <a href="login.html">Log In</a>
+      <a href="register.html">Sign Up</a>
+    </div>
+  </header>
+
+  <!-- ========== DASHBOARD LAYOUT ========== -->
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-user">
+          <div class="sidebar-avatar">--</div>
+          <div class="sidebar-user-info">
+            <h4>Loading...</h4>
+            <p>Participant</p>
+          </div>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="sidebar-nav-group">
+          <div class="sidebar-nav-label">Menu</div>
+          <a href="my-events.html"><i class="fas fa-calendar-alt"></i> My Events</a>
+          <a href="events.html"><i class="fas fa-compass"></i> Browse Events</a>
+          <a href="wishlist.html"><i class="fas fa-heart"></i> Wishlist</a>
+          <a href="profile.html"><i class="fas fa-user"></i> My Profile</a>
+          <a href="notifications.html" class="active"><i class="fas fa-bell"></i> Notifications</a>
+          <a href="settings.html"><i class="fas fa-cog"></i> Settings</a>
+        </div>
+        <div class="sidebar-nav-group" style="margin-top:16px;">
+          <div class="sidebar-nav-label">Account</div>
+          <a href="#" onclick="event.preventDefault(); Auth.logout();"><i class="fas fa-sign-out-alt"></i> Log Out</a>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="dash-content">
+      <div class="dash-header">
+        <div>
+          <h1>Notifications</h1>
+          <p>Stay updated on your registrations and events</p>
+        </div>
+        <button class="btn btn-ghost" onclick="markAllRead()" id="markAllBtn" style="display:none;">
+          <i class="fas fa-check-double"></i> Mark All Read
+        </button>
+      </div>
+
+      <!-- Notification Filters -->
+      <div class="tabs" style="margin-bottom:24px;">
+        <button class="tab active" onclick="filterNotifs('all', this)">All</button>
+        <button class="tab" onclick="filterNotifs('approved', this)">Approved</button>
+        <button class="tab" onclick="filterNotifs('pending', this)">Pending</button>
+        <button class="tab" onclick="filterNotifs('rejected', this)">Rejected</button>
+      </div>
+
+      <!-- Notifications List -->
+      <div id="notifList"></div>
+
+      <!-- Empty State -->
+      <div class="empty-state hidden" id="emptyNotifs">
+        <i class="fas fa-bell-slash" style="font-size:3rem;color:var(--text-muted);margin-bottom:16px;"></i>
+        <h3>No notifications</h3>
+        <p>When you register for events, you'll see status updates here.</p>
+        <a href="events.html" class="btn btn-primary" style="margin-top:16px;">
+          <i class="fas fa-compass"></i> Browse Events
+        </a>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/chatbot.js"></script>
+
+  <script>
+    // Require login
+    if (!Auth.isLoggedIn()) {
+      window.location.href = 'login.html';
+    }
+
+    var allNotifications = [];
+
+    document.addEventListener('DOMContentLoaded', async function() {
+      // Populate sidebar user info
+      var user = Auth.getUser();
+      if (user) {
+        document.querySelectorAll('.sidebar-avatar').forEach(function(el) { el.innerHTML = getAvatarHtml(user, 42, '1rem'); });
+        document.querySelectorAll('.sidebar-user-info h4').forEach(function(el) { el.textContent = user.first_name + ' ' + user.last_name; });
+        document.querySelectorAll('.sidebar-user-info p').forEach(function(el) { el.textContent = user.role === 'admin' ? 'Administrator' : 'Participant'; });
+      }
+
+      await loadNotifications();
+    });
+
+    async function loadNotifications() {
+      try {
+        var data = await RegistrationsAPI.getMy('all');
+        var regs = data.registrations || [];
+
+        // Convert registrations to notification items
+        allNotifications = regs.map(function(reg) {
+          var icon, iconClass, title, message;
+
+          if (reg.status === 'approved') {
+            icon = 'fa-check-circle';
+            iconClass = 'success';
+            title = 'Registration Approved';
+            message = 'Your registration for <strong>' + reg.event_title + '</strong> has been approved. Get ready for the adventure!';
+          } else if (reg.status === 'rejected') {
+            icon = 'fa-times-circle';
+            iconClass = 'danger';
+            title = 'Registration Rejected';
+            message = 'Unfortunately, your registration for <strong>' + reg.event_title + '</strong> was not approved.';
+          } else if (reg.status === 'waitlisted') {
+            icon = 'fa-clock';
+            iconClass = 'warning';
+            title = 'Added to Waitlist';
+            message = 'You\'ve been added to the waitlist for <strong>' + reg.event_title + '</strong>. We\'ll notify you if a spot opens up.';
+          } else {
+            icon = 'fa-info-circle';
+            iconClass = 'info';
+            title = 'Registration Pending';
+            message = 'Your registration for <strong>' + reg.event_title + '</strong> is being reviewed by the admin team.';
+          }
+
+          return {
+            id: reg.id,
+            status: reg.status,
+            icon: icon,
+            iconClass: iconClass,
+            title: title,
+            message: message,
+            time: reg.registered_at,
+            eventId: reg.event_id
+          };
+        });
+
+        renderNotifs(allNotifications);
+
+        if (allNotifications.length > 0) {
+          document.getElementById('markAllBtn').style.display = '';
+        }
+      } catch (err) {
+        showToast('Failed to load notifications', 'error');
+      }
+    }
+
+    function renderNotifs(notifs) {
+      var container = document.getElementById('notifList');
+      var empty = document.getElementById('emptyNotifs');
+
+      if (notifs.length === 0) {
+        container.innerHTML = '';
+        empty.classList.remove('hidden');
+        return;
+      }
+
+      empty.classList.add('hidden');
+
+      container.innerHTML = notifs.map(function(n) {
+        return '<div class="notification-item" style="cursor:pointer;" onclick="window.location.href=\'event-detail.html?id=' + n.eventId + '\'">' +
+          '<div class="notification-icon ' + n.iconClass + '"><i class="fas ' + n.icon + '"></i></div>' +
+          '<div class="notification-content">' +
+            '<h4>' + n.title + '</h4>' +
+            '<p>' + n.message + '</p>' +
+          '</div>' +
+          '<div class="notification-time">' + formatDate(n.time) + '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    function filterNotifs(status, el) {
+      document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+      if (el) el.classList.add('active');
+
+      if (status === 'all') {
+        renderNotifs(allNotifications);
+      } else {
+        renderNotifs(allNotifications.filter(function(n) { return n.status === status; }));
+      }
+    }
+
+    function markAllRead() {
+      showToast('All notifications marked as read', 'success');
+    }
+  </script>
+</body>
+</html>

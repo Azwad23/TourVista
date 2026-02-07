@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Events — TourVista</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- ========== HEADER ========== -->
+  <header class="header" id="header">
+    <div class="header-inner">
+      <a href="index.html" class="logo">
+        <i class="fas fa-globe-americas"></i>
+        <span>TourVista</span>
+      </a>
+      <nav class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="events.html">Events</a>
+        <a href="my-events.html" class="active">My Events</a>
+      </nav>
+      <div class="nav-auth">
+        <!-- Will be dynamically replaced by initAuthNav() -->
+        <a href="login.html" class="btn btn-ghost">Log In</a>
+        <a href="register.html" class="btn btn-primary">Sign Up</a>
+      </div>
+      <button class="mobile-toggle"><i class="fas fa-bars"></i></button>
+    </div>
+    <div class="mobile-nav" id="mobileNav">
+      <a href="index.html">Home</a>
+      <a href="events.html">Events</a>
+      <a href="my-events.html">My Events</a>
+    </div>
+  </header>
+
+  <!-- ========== DASHBOARD LAYOUT ========== -->
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-user">
+          <div class="sidebar-avatar">--</div>
+          <div class="sidebar-user-info">
+            <h4>Loading...</h4>
+            <p>Participant</p>
+          </div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="sidebar-nav-group">
+          <div class="sidebar-nav-label">Menu</div>
+          <a href="my-events.html" class="active"><i class="fas fa-calendar-alt"></i> My Events</a>
+          <a href="events.html"><i class="fas fa-compass"></i> Browse Events</a>
+          <a href="wishlist.html"><i class="fas fa-heart"></i> Wishlist</a>
+          <a href="profile.html"><i class="fas fa-user"></i> My Profile</a>
+          <a href="notifications.html"><i class="fas fa-bell"></i> Notifications <span class="nav-badge" id="notifBadge">0</span></a>
+          <a href="settings.html"><i class="fas fa-cog"></i> Settings</a>
+        </div>
+        <div class="sidebar-nav-group" style="margin-top:16px;">
+          <div class="sidebar-nav-label">Account</div>
+          <a href="#" onclick="event.preventDefault(); Auth.logout();"><i class="fas fa-sign-out-alt"></i> Log Out</a>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="dash-content">
+      <div class="dash-header">
+        <div>
+          <h1>My Events</h1>
+          <p>Track your registered events and their status</p>
+        </div>
+        <a href="events.html" class="btn btn-primary">
+          <i class="fas fa-plus"></i> Browse More Events
+        </a>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon blue"><i class="fas fa-calendar-check"></i></div>
+          <div class="stat-info">
+            <h3>3</h3>
+            <p>Total Registrations</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
+          <div class="stat-info">
+            <h3>2</h3>
+            <p>Approved</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon orange"><i class="fas fa-clock"></i></div>
+          <div class="stat-info">
+            <h3>1</h3>
+            <p>Pending</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tab active" onclick="filterMyEvents('all', this)">All Events</button>
+        <button class="tab" onclick="filterMyEvents('approved', this)">Approved</button>
+        <button class="tab" onclick="filterMyEvents('pending', this)">Pending</button>
+        <button class="tab" onclick="filterMyEvents('rejected', this)">Rejected</button>
+      </div>
+
+      <!-- Event List -->
+      <div class="my-events-list" id="myEventsList"></div>
+
+      <!-- Empty State -->
+      <div class="empty-state hidden" id="emptyMyEvents">
+        <i class="fas fa-calendar-times"></i>
+        <h3>No events found</h3>
+        <p>You haven't registered for any events with this filter.</p>
+        <a href="events.html" class="btn btn-primary" style="margin-top:16px;">
+          <i class="fas fa-compass"></i> Browse Events
+        </a>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/chatbot.js"></script>
+
+  <script>
+    // Require login
+    if (!Auth.isLoggedIn()) {
+      window.location.href = 'login.html';
+    }
+
+    document.addEventListener('DOMContentLoaded', async function() {
+      // Update sidebar with real user info
+      const user = Auth.getUser();
+      if (user) {
+        document.querySelectorAll('.sidebar-avatar').forEach(el => el.innerHTML = getAvatarHtml(user, 42, '1rem'));
+        document.querySelectorAll('.sidebar-user-info h4').forEach(el => el.textContent = `${user.first_name} ${user.last_name}`);
+      }
+      await renderMyEvents('all');
+    });
+
+    async function filterMyEvents(status, el) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      if (el) el.classList.add('active');
+      await renderMyEvents(status);
+    }
+
+    async function renderMyEvents(statusFilter) {
+      try {
+        const data = await RegistrationsAPI.getMy(statusFilter);
+        const regs = data.registrations || [];
+        const counts = data.counts || {};
+
+        // Update stat cards
+        const statCards = document.querySelectorAll('.stat-card h3');
+        if (statCards.length >= 3) {
+          statCards[0].textContent = counts.total || 0;
+          statCards[1].textContent = counts.approved || 0;
+          statCards[2].textContent = counts.pending || 0;
+        }
+
+        const container = document.getElementById('myEventsList');
+        const empty = document.getElementById('emptyMyEvents');
+
+        if (regs.length === 0) {
+          container.innerHTML = '';
+          empty.classList.remove('hidden');
+          return;
+        }
+
+        empty.classList.add('hidden');
+
+        container.innerHTML = regs.map(reg => `
+          <div class="my-event-card">
+            <div class="my-event-img">
+              ${reg.image_url
+                ? '<img src="' + getEventImageUrl(reg.image_url) + '" alt="' + reg.event_title + '" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius);">'
+                : '<div class="placeholder-img" style="' + reg.gradient + '; border-radius:var(--radius);"><i class="' + reg.icon + '" style="color:white;"></i></div>'
+              }
+            </div>
+            <div class="my-event-info" style="flex:1;">
+              <h3>${reg.event_title}</h3>
+              <p>
+                <i class="fas fa-map-marker-alt" style="margin-right:4px;color:var(--primary);"></i> ${reg.destination || 'TBA'}
+                &nbsp;&bull;&nbsp;
+                <i class="fas fa-calendar" style="margin-right:4px;color:var(--primary);"></i> ${formatDate(reg.start_date)}
+              </p>
+              <p style="margin-top:4px;">
+                Registered on: ${formatDate(reg.registered_at)} &nbsp;&bull;&nbsp; ${formatCurrency(reg.cost)}/person
+              </p>
+            </div>
+            <div class="my-event-actions">
+              ${getStatusBadge(reg.status)}
+              <a href="event-detail.html?id=${reg.event_id}" class="btn btn-outline btn-sm">
+                <i class="fas fa-eye"></i> View
+              </a>
+              ${reg.status === 'pending' ? `
+                <button class="btn btn-ghost btn-sm" style="color:var(--danger);" onclick="cancelRegistration(${reg.id})">
+                  <i class="fas fa-times"></i> Cancel
+                </button>
+              ` : ''}
+            </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        showToast('Failed to load registrations', 'error');
+      }
+    }
+
+    async function cancelRegistration(regId) {
+      if (!confirm('Are you sure you want to cancel this registration?')) return;
+      try {
+        await RegistrationsAPI.cancel(regId);
+        showToast('Registration cancelled', 'success');
+        await renderMyEvents('all');
+      } catch (err) {
+        showToast(err.message || 'Cancel failed', 'error');
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings — TourVista Admin</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body data-page="admin-settings">
+
+  <!-- Header -->
+  <header class="header" id="header">
+    <div class="header-inner">
+      <div style="display:flex;align-items:center;gap:16px;">
+        <a href="../index.html" class="logo"><i class="fas fa-globe-americas"></i><span>TourVista</span></a>
+        <span class="badge badge-info" style="font-size:0.7rem;">ADMIN</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <a href="dashboard.html" class="btn btn-icon btn-ghost" style="position:relative;" title="Notifications">
+          <i class="fas fa-bell"></i>
+          <span class="admin-notif-dot" style="position:absolute;top:4px;right:4px;width:8px;height:8px;border-radius:50%;background:var(--danger);display:none;"></span>
+        </a>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="admin-header-avatar" style="width:36px;height:36px;border-radius:50%;overflow:hidden;"></div>
+          <span class="admin-header-name" style="font-weight:600;font-size:0.85rem;">Admin</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-user">
+          <div class="sidebar-avatar">--</div>
+          <div class="sidebar-user-info"><h4>Loading...</h4><p>Administrator</p></div>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="sidebar-nav-group">
+          <div class="sidebar-nav-label">Overview</div>
+          <a href="dashboard.html"><i class="fas fa-chart-pie"></i> Dashboard</a>
+        </div>
+        <div class="sidebar-nav-group">
+          <div class="sidebar-nav-label">Management</div>
+          <a href="events.html"><i class="fas fa-calendar-alt"></i> Events</a>
+          <a href="approvals.html"><i class="fas fa-user-check"></i> Approvals <span class="admin-pending-badge nav-badge">0</span></a>
+          <a href="users.html"><i class="fas fa-users"></i> Users</a>
+        </div>
+        <div class="sidebar-nav-group">
+          <div class="sidebar-nav-label">Tools</div>
+          <a href="chatbot.html"><i class="fas fa-robot"></i> Chatbot Monitor</a>
+          <a href="settings.html" class="active"><i class="fas fa-cog"></i> Settings</a>
+        </div>
+        <div class="sidebar-nav-group" style="margin-top:16px;">
+          <a href="#" onclick="event.preventDefault(); Auth.logout();"><i class="fas fa-sign-out-alt"></i> Log Out</a>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="dash-content">
+      <div class="dash-header">
+        <div>
+          <h1>Settings</h1>
+          <p>Manage your account and platform preferences</p>
+        </div>
+      </div>
+
+      <!-- Profile Section -->
+      <div class="card" style="cursor:default;margin-bottom:24px;">
+        <div class="card-body">
+          <h3 style="font-size:1.1rem;margin-bottom:20px;"><i class="fas fa-user-circle" style="margin-right:8px;color:var(--primary);"></i> Profile Information</h3>
+          <form id="adminProfileForm">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+              <div class="form-group">
+                <label class="form-label">First Name</label>
+                <input type="text" class="form-input" id="settingsFirstName">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Last Name</label>
+                <input type="text" class="form-input" id="settingsLastName">
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+              <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-input" id="settingsEmail" disabled style="background:var(--bg);cursor:not-allowed;">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Phone</label>
+                <input type="text" class="form-input" id="settingsPhone" placeholder="Optional">
+              </div>
+            </div>
+            <button type="button" class="btn btn-primary" onclick="saveAdminProfile()">
+              <i class="fas fa-save"></i> Save Changes
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Password Section -->
+      <div class="card" style="cursor:default;margin-bottom:24px;">
+        <div class="card-body">
+          <h3 style="font-size:1.1rem;margin-bottom:20px;"><i class="fas fa-lock" style="margin-right:8px;color:var(--primary);"></i> Change Password</h3>
+          <form id="adminPasswordForm">
+            <div class="form-group">
+              <label class="form-label">Current Password</label>
+              <input type="password" class="form-input" id="settingsCurrentPwd" placeholder="Enter current password">
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+              <div class="form-group">
+                <label class="form-label">New Password</label>
+                <input type="password" class="form-input" id="settingsNewPwd" placeholder="At least 6 characters">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Confirm New Password</label>
+                <input type="password" class="form-input" id="settingsConfirmPwd" placeholder="Repeat new password">
+              </div>
+            </div>
+            <button type="button" class="btn btn-primary" onclick="changeAdminPassword()">
+              <i class="fas fa-key"></i> Update Password
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Platform Settings -->
+      <div class="card" style="cursor:default;margin-bottom:24px;">
+        <div class="card-body">
+          <h3 style="font-size:1.1rem;margin-bottom:20px;"><i class="fas fa-sliders-h" style="margin-right:8px;color:var(--primary);"></i> Platform Preferences</h3>
+          <div style="display:flex;flex-direction:column;gap:16px;">
+            <label style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg);border-radius:var(--radius);cursor:pointer;">
+              <div>
+                <div style="font-weight:600;font-size:0.9rem;">Email Notifications</div>
+                <div style="font-size:0.8rem;color:var(--text-muted);">Receive email alerts for new registrations</div>
+              </div>
+              <input type="checkbox" checked style="width:18px;height:18px;accent-color:var(--primary);">
+            </label>
+            <label style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg);border-radius:var(--radius);cursor:pointer;">
+              <div>
+                <div style="font-weight:600;font-size:0.9rem;">Auto-approve Registrations</div>
+                <div style="font-size:0.8rem;color:var(--text-muted);">Automatically approve when spots are available</div>
+              </div>
+              <input type="checkbox" style="width:18px;height:18px;accent-color:var(--primary);">
+            </label>
+            <label style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg);border-radius:var(--radius);cursor:pointer;">
+              <div>
+                <div style="font-weight:600;font-size:0.9rem;">Chatbot Active</div>
+                <div style="font-size:0.8rem;color:var(--text-muted);">Enable the AI chatbot for participants</div>
+              </div>
+              <input type="checkbox" checked style="width:18px;height:18px;accent-color:var(--primary);">
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Danger Zone -->
+      <div class="card" style="cursor:default;border:1px solid var(--danger);">
+        <div class="card-body">
+          <h3 style="font-size:1.1rem;margin-bottom:8px;color:var(--danger);"><i class="fas fa-exclamation-triangle" style="margin-right:8px;"></i> Danger Zone</h3>
+          <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:16px;">These actions are irreversible. Proceed with caution.</p>
+          <div style="display:flex;gap:12px;">
+            <button class="btn btn-ghost" style="color:var(--danger);border-color:var(--danger);" onclick="if(confirm('Are you sure you want to deactivate your account?')) showToast('Account deactivation would go here','info');">
+              <i class="fas fa-user-slash"></i> Deactivate Account
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/app.js"></script>
+  <script src="../js/admin.js"></script>
+  <script>
+    if (!Auth.isLoggedIn() || !Auth.isAdmin()) { window.location.href = '../login.html'; }
+
+    document.addEventListener('DOMContentLoaded', async function() {
+      // Load current user info
+      try {
+        var data = await AuthAPI.getMe();
+        var user = data.user;
+        if (user) {
+          document.getElementById('settingsFirstName').value = user.first_name || '';
+          document.getElementById('settingsLastName').value = user.last_name || '';
+          document.getElementById('settingsEmail').value = user.email || '';
+          document.getElementById('settingsPhone').value = user.phone || '';
+        }
+      } catch(e) {
+        console.error('Failed to load user data:', e);
+      }
+    });
+
+    async function saveAdminProfile() {
+      var firstName = document.getElementById('settingsFirstName').value.trim();
+      var lastName = document.getElementById('settingsLastName').value.trim();
+      var phone = document.getElementById('settingsPhone').value.trim();
+
+      if (!firstName || !lastName) {
+        showToast('First and last name are required', 'error');
+        return;
+      }
+
+      try {
+        var data = await UsersAPI.updateProfile({ first_name: firstName, last_name: lastName, phone: phone });
+        // Update local storage user
+        var user = Auth.getUser();
+        if (user) {
+          user.first_name = firstName;
+          user.last_name = lastName;
+          Auth.setUser(user);
+        }
+        showToast('Profile updated successfully', 'success');
+        updateNavForUser();
+      } catch(err) {
+        showToast(err.message || 'Update failed', 'error');
+      }
+    }
+
+    async function changeAdminPassword() {
+      var current = document.getElementById('settingsCurrentPwd').value;
+      var newPwd = document.getElementById('settingsNewPwd').value;
+      var confirm = document.getElementById('settingsConfirmPwd').value;
+
+      if (!current || !newPwd || !confirm) {
+        showToast('Please fill in all password fields', 'error');
+        return;
+      }
+      if (newPwd.length < 6) {
+        showToast('New password must be at least 6 characters', 'error');
+        return;
+      }
+      if (newPwd !== confirm) {
+        showToast('Passwords do not match', 'error');
+        return;
+      }
+
+      try {
+        await UsersAPI.changePassword(current, newPwd);
+        showToast('Password changed successfully', 'success');
+        document.getElementById('adminPasswordForm').reset();
+      } catch(err) {
+        showToast(err.message || 'Password change failed', 'error');
+      }
+    }
+  </script>
+</body>
+</html>

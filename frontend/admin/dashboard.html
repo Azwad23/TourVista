@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — TourVista</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body data-page="admin-dashboard">
+
+  <!-- ========== HEADER ========== -->
+  <header class="header" id="header">
+    <div class="header-inner">
+      <div style="display:flex;align-items:center;gap:16px;">
+        <button class="btn btn-icon btn-ghost" onclick="toggleSidebar()" style="display:none;" id="sidebarToggle">
+          <i class="fas fa-bars"></i>
+        </button>
+        <a href="../index.html" class="logo">
+          <i class="fas fa-globe-americas"></i>
+          <span>TourVista</span>
+        </a>
+        <span class="badge badge-info" style="font-size:0.7rem;">ADMIN</span>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:16px;">
+        <a href="notifications.html" class="btn btn-icon btn-ghost" style="position:relative;" title="Notifications">
+          <i class="fas fa-bell"></i>
+          <span class="admin-notif-dot" style="position:absolute;top:4px;right:4px;width:8px;height:8px;border-radius:50%;background:var(--danger);display:none;"></span>
+        </a>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="admin-header-avatar" style="width:36px;height:36px;border-radius:50%;overflow:hidden;"></div>
+          <span class="admin-header-name" style="font-weight:600;font-size:0.85rem;">Admin</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========== DASHBOARD LAYOUT ========== -->
+  <div class="dashboard-layout">
+    <!-- Admin Sidebar -->
+    <aside class="sidebar" id="adminSidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-user">
+          <div class="sidebar-avatar admin-sidebar-avatar">--</div>
+          <div class="sidebar-user-info">
+            <h4 class="admin-sidebar-name">Loading...</h4>
+            <p>Administrator</p>
+          </div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="sidebar-nav-group">
+          <div class="sidebar-nav-label">Overview</div>
+          <a href="dashboard.html" class="active"><i class="fas fa-chart-pie"></i> Dashboard</a>
+        </div>
+        <div class="sidebar-nav-group">
+          <div class="sidebar-nav-label">Management</div>
+          <a href="events.html"><i class="fas fa-calendar-alt"></i> Events</a>
+          <a href="approvals.html"><i class="fas fa-user-check"></i> Approvals <span class="admin-pending-badge nav-badge">0</span></a>
+          <a href="users.html"><i class="fas fa-users"></i> Users</a>
+        </div>
+        <div class="sidebar-nav-group">
+          <div class="sidebar-nav-label">Tools</div>
+          <a href="chatbot.html"><i class="fas fa-robot"></i> Chatbot Monitor</a>
+          <a href="settings.html"><i class="fas fa-cog"></i> Settings</a>
+        </div>
+        <div class="sidebar-nav-group" style="margin-top:16px;">
+          <a href="#" onclick="event.preventDefault(); Auth.logout();"><i class="fas fa-sign-out-alt"></i> Log Out</a>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="dash-content">
+      <div class="dash-header">
+        <div>
+          <h1>Dashboard</h1>
+          <p>Welcome back! Here's your platform overview.</p>
+        </div>
+        <div style="display:flex;gap:12px;">
+          <a href="events.html" class="btn btn-primary">
+            <i class="fas fa-plus"></i> New Event
+          </a>
+        </div>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon blue"><i class="fas fa-users"></i></div>
+          <div class="stat-info">
+            <h3 data-count="156">0</h3>
+            <p>Total Users</p>
+            <div class="stat-trend up"><i class="fas fa-arrow-up"></i> 12.5% this month</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon purple"><i class="fas fa-calendar-alt"></i></div>
+          <div class="stat-info">
+            <h3 data-count="6">0</h3>
+            <p>Total Events</p>
+            <div class="stat-trend up"><i class="fas fa-arrow-up"></i> 2 new this month</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
+          <div class="stat-info">
+            <h3 data-count="42">0</h3>
+            <p>Active Registrations</p>
+            <div class="stat-trend up"><i class="fas fa-arrow-up"></i> 8.3% this month</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon orange"><i class="fas fa-clock"></i></div>
+          <div class="stat-info">
+            <h3 data-count="4">0</h3>
+            <p>Pending Approvals</p>
+            <div class="stat-trend down"><i class="fas fa-arrow-down"></i> Needs attention</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts Row -->
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:24px;margin-bottom:32px;">
+        <!-- Bar Chart -->
+        <div class="card" style="cursor:default;">
+          <div class="card-body">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+              <div>
+                <h3 style="font-size:1.1rem;">Registration Trends</h3>
+                <p style="font-size:0.85rem;color:var(--text-muted);">Monthly registrations overview</p>
+              </div>
+              <select class="form-select" style="width:auto;padding:6px 30px 6px 10px;font-size:0.8rem;">
+                <option>Last 6 months</option>
+                <option>Last year</option>
+              </select>
+            </div>
+            <div class="bar-chart" id="barChart" style="margin-bottom:30px;"></div>
+          </div>
+        </div>
+
+        <!-- Category Breakdown -->
+        <div class="card" style="cursor:default;">
+          <div class="card-body">
+            <h3 style="font-size:1.1rem;margin-bottom:4px;">Events by Category</h3>
+            <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:20px;">Distribution of event types</p>
+
+            <div style="display:flex;flex-direction:column;gap:16px;">
+              <div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+                  <span style="font-size:0.85rem;font-weight:500;">Cultural Tours</span>
+                  <span style="font-size:0.8rem;color:var(--text-muted);">3</span>
+                </div>
+                <div class="progress"><div class="progress-bar" style="width:50%;background:var(--primary)"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+                  <span style="font-size:0.85rem;font-weight:500;">Trekking</span>
+                  <span style="font-size:0.8rem;color:var(--text-muted);">1</span>
+                </div>
+                <div class="progress"><div class="progress-bar" style="width:16.7%;background:#7c3aed"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+                  <span style="font-size:0.85rem;font-weight:500;">Cycling</span>
+                  <span style="font-size:0.8rem;color:var(--text-muted);">1</span>
+                </div>
+                <div class="progress"><div class="progress-bar" style="width:16.7%;background:var(--success)"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+                  <span style="font-size:0.85rem;font-weight:500;">Outings</span>
+                  <span style="font-size:0.8rem;color:var(--text-muted);">1</span>
+                </div>
+                <div class="progress"><div class="progress-bar" style="width:16.7%;background:var(--accent)"></div></div>
+              </div>
+            </div>
+
+            <div style="margin-top:24px;padding:16px;background:var(--bg);border-radius:var(--radius);text-align:center;">
+              <div style="font-size:2rem;font-weight:800;color:var(--primary);">6</div>
+              <div style="font-size:0.8rem;color:var(--text-muted);">Total Events</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="card" style="cursor:default;">
+        <div class="card-body">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+            <div>
+              <h3 style="font-size:1.1rem;">Recent Registrations</h3>
+              <p style="font-size:0.85rem;color:var(--text-muted);">Latest participant registration activity</p>
+            </div>
+            <a href="approvals.html" class="btn btn-outline btn-sm">View All</a>
+          </div>
+
+          <div class="table-container" style="box-shadow:none;">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Participant</th>
+                  <th>Event</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="recentRegistrations"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/app.js"></script>
+  <script src="../js/admin.js"></script>
+  <script>
+    if (!Auth.isLoggedIn() || !Auth.isAdmin()) { window.location.href = '../login.html'; }
+  </script>
+</body>
+</html>

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Events — TourVista</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- ========== HEADER ========== -->
+  <header class="header" id="header">
+    <div class="header-inner">
+      <a href="index.html" class="logo">
+        <i class="fas fa-globe-americas"></i>
+        <span>TourVista</span>
+      </a>
+      <nav class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="events.html" class="active">Events</a>
+        <a href="my-events.html">My Events</a>
+      </nav>
+      <div class="nav-auth">
+        <a href="login.html" class="btn btn-ghost">Log In</a>
+        <a href="register.html" class="btn btn-primary">Sign Up</a>
+      </div>
+      <button class="mobile-toggle"><i class="fas fa-bars"></i></button>
+    </div>
+    <div class="mobile-nav" id="mobileNav">
+      <a href="index.html">Home</a>
+      <a href="events.html">Events</a>
+      <a href="my-events.html">My Events</a>
+      <hr style="border-color:var(--border);margin:8px 0;">
+      <a href="login.html">Log In</a>
+      <a href="register.html">Sign Up</a>
+    </div>
+  </header>
+
+  <!-- ========== PAGE CONTENT ========== -->
+  <div class="page-content">
+    <!-- Page Header -->
+    <div style="background: linear-gradient(135deg, #0f172a, #1e3a5f); padding: 60px 0 40px; color: white;">
+      <div class="container">
+        <h1 style="color:white; font-size: 2.2rem; margin-bottom: 8px;">
+          <i class="fas fa-compass" style="margin-right:12px; opacity:0.7;"></i>Explore Events
+        </h1>
+        <p style="color:rgba(255,255,255,0.65); font-size:1rem;">
+          Browse our curated collection of group tours and adventures around the world
+        </p>
+      </div>
+    </div>
+
+    <div class="container" style="padding-top:32px; padding-bottom:60px;">
+      <!-- Toolbar: Search & Filters -->
+      <div class="toolbar">
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Search events by name or destination..." id="eventSearch" oninput="handleEventFilter()">
+        </div>
+        <div class="filters">
+          <button class="filter-chip active" onclick="setCategory('all', this)">All</button>
+          <button class="filter-chip" onclick="setCategory('tour', this)">
+            <i class="fas fa-landmark"></i> Tours
+          </button>
+          <button class="filter-chip" onclick="setCategory('trek', this)">
+            <i class="fas fa-mountain"></i> Treks
+          </button>
+          <button class="filter-chip" onclick="setCategory('cycling', this)">
+            <i class="fas fa-bicycle"></i> Cycling
+          </button>
+          <button class="filter-chip" onclick="setCategory('outing', this)">
+            <i class="fas fa-campground"></i> Outings
+          </button>
+        </div>
+      </div>
+
+      <!-- Status Filters -->
+      <div style="display:flex;gap:8px;margin-bottom:28px;flex-wrap:wrap;">
+        <button class="filter-chip active" onclick="setStatus('all', this)" data-filter="status">All Status</button>
+        <button class="filter-chip" onclick="setStatus('open', this)" data-filter="status">
+          <span style="width:8px;height:8px;border-radius:50%;background:var(--success);display:inline-block;"></span> Open
+        </button>
+        <button class="filter-chip" onclick="setStatus('full', this)" data-filter="status">
+          <span style="width:8px;height:8px;border-radius:50%;background:var(--warning);display:inline-block;"></span> Full
+        </button>
+        <button class="filter-chip" onclick="setStatus('closed', this)" data-filter="status">
+          <span style="width:8px;height:8px;border-radius:50%;background:var(--danger);display:inline-block;"></span> Closed
+        </button>
+      </div>
+
+      <!-- Results Count -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+        <p id="resultCount" style="font-size:0.9rem;color:var(--text-light);">Showing 6 events</p>
+        <select class="form-select" style="width:auto;padding:8px 36px 8px 12px;font-size:0.85rem;" onchange="handleSort(this.value)">
+          <option value="date">Sort by Date</option>
+          <option value="price-low">Price: Low to High</option>
+          <option value="price-high">Price: High to Low</option>
+          <option value="popular">Most Popular</option>
+        </select>
+      </div>
+
+      <!-- Events Grid -->
+      <div class="events-grid" id="eventsGrid"></div>
+
+      <!-- Empty State -->
+      <div class="empty-state hidden" id="emptyState">
+        <i class="fas fa-search"></i>
+        <h3>No events found</h3>
+        <p>Try adjusting your filters or search query</p>
+        <button class="btn btn-primary" style="margin-top:16px;" onclick="resetFilters()">Reset Filters</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom" style="border:none;padding:20px 0;">
+        <p>&copy; 2026 TourVista. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/chatbot.js"></script>
+
+  <script>
+    let currentCategory = 'all';
+    let currentStatus = 'all';
+    let currentSort = 'date';
+    let allEvents = [];
+
+    document.addEventListener('DOMContentLoaded', async function() {
+      await loadEvents();
+    });
+
+    async function loadEvents() {
+      try {
+        const sortMap = { 'date': 'date-asc', 'price-low': 'price-asc', 'price-high': 'price-desc', 'popular': 'date-desc' };
+        const params = {};
+        if (currentCategory !== 'all') params.category = currentCategory;
+        if (currentStatus !== 'all') params.status = currentStatus;
+        const search = document.getElementById('eventSearch').value;
+        if (search) params.search = search;
+        params.sort = sortMap[currentSort] || 'date-asc';
+
+        const data = await EventsAPI.getAll(params);
+        allEvents = data.events || [];
+        await renderEventsFromAPI(allEvents);
+      } catch (err) {
+        console.error('Failed to load events:', err);
+        showToast('Failed to load events', 'error');
+      }
+    }
+
+    async function renderEventsFromAPI(events) {
+      document.getElementById('resultCount').textContent = `Showing ${events.length} event${events.length !== 1 ? 's' : ''}`;
+
+      if (events.length === 0) {
+        document.getElementById('eventsGrid').innerHTML = '';
+        document.getElementById('emptyState').classList.remove('hidden');
+      } else {
+        document.getElementById('emptyState').classList.add('hidden');
+
+        // Bulk-check wishlist state from API
+        var wishlistedIds = [];
+        if (Auth.isLoggedIn()) {
+          try {
+            var ids = events.map(function(e) { return e.id; });
+            var wData = await WishlistAPI.checkBulk(ids);
+            wishlistedIds = wData.wishlisted || [];
+          } catch(e) { /* ignore */ }
+        }
+
+        const grid = document.getElementById('eventsGrid');
+        grid.innerHTML = events.map(event => {
+          var isWished = wishlistedIds.includes(event.id);
+          return `
+          <div class="event-card" data-animate>
+            <a href="event-detail.html?id=${event.id}" style="text-decoration:none;color:inherit;">
+              <div class="event-card-img">
+                ${event.image_url
+                  ? '<img src="' + getEventImageUrl(event.image_url) + '" alt="' + event.title + '">'
+                  : '<div class="placeholder-img" style="' + event.gradient + '"><i class="' + event.icon + '"></i></div>'
+                }
+                <div class="event-card-badge">${getCategoryLabel(event.category)}</div>
+                <button class="wishlist-heart ${isWished ? 'active' : ''}" onclick="event.preventDefault();event.stopPropagation();toggleWishlistCard(this,${event.id})" data-id="${event.id}" title="Save to wishlist">
+                  <i class="${isWished ? 'fas' : 'far'} fa-heart"></i>
+                </button>
+              </div>
+              <div class="event-card-body">
+                <h3>${event.title}</h3>
+                <p class="event-meta">
+                  <span><i class="fas fa-map-marker-alt"></i> ${event.destination || 'TBA'}</span>
+                  <span><i class="fas fa-calendar"></i> ${formatDate(event.start_date)}</span>
+                </p>
+                <p class="event-desc">${event.description ? event.description.substring(0, 100) + '...' : ''}</p>
+                <div class="event-card-footer">
+                  <span class="price">${formatCurrency(event.cost)}</span>
+                  <span class="spots">${event.participant_limit - event.current_participants} spots left</span>
+                </div>
+              </div>
+            </a>
+          </div>
+        `;
+        }).join('');
+      }
+    }
+
+    function setCategory(cat, el) {
+      currentCategory = cat;
+      document.querySelectorAll('.filters .filter-chip').forEach(c => c.classList.remove('active'));
+      el.classList.add('active');
+      loadEvents();
+    }
+
+    function setStatus(status, el) {
+      currentStatus = status;
+      document.querySelectorAll('[data-filter="status"]').forEach(c => c.classList.remove('active'));
+      el.classList.add('active');
+      loadEvents();
+    }
+
+    function handleEventFilter() { loadEvents(); }
+    function handleSort(value) { currentSort = value; loadEvents(); }
+
+    function resetFilters() {
+      currentCategory = 'all';
+      currentStatus = 'all';
+      document.getElementById('eventSearch').value = '';
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      document.querySelectorAll('.filter-chip:first-child').forEach(c => c.classList.add('active'));
+      loadEvents();
+    }
+
+    async function toggleWishlistCard(btn, eventId) {
+      if (!Auth.isLoggedIn()) {
+        showToast('Please log in to save events', 'warning');
+        return;
+      }
+      try {
+        var data = await WishlistAPI.toggle(eventId);
+        var icon = btn.querySelector('i');
+        if (data.inWishlist) {
+          btn.classList.add('active');
+          icon.className = 'fas fa-heart';
+          showToast('Added to wishlist!', 'success');
+        } else {
+          btn.classList.remove('active');
+          icon.className = 'far fa-heart';
+          showToast('Removed from wishlist', 'info');
+        }
+      } catch (err) {
+        showToast('Failed to update wishlist', 'error');
+      }
+    }
+  </script>
+</body>
+</html>

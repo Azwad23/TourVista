@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Simulation — TourVista Dev</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    .sim-container {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+    .sim-card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.12);
+      max-width: 420px;
+      width: 100%;
+      overflow: hidden;
+    }
+    .sim-header {
+      padding: 24px 28px 16px;
+      text-align: center;
+    }
+    .sim-header .sim-badge {
+      display: inline-block;
+      background: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffc107;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 16px;
+    }
+    .sim-logo {
+      width: 64px;
+      height: 64px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 12px;
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #fff;
+    }
+    .sim-logo.bkash { background: linear-gradient(135deg, #E2136E 0%, #a70d52 100%); }
+    .sim-logo.nagad { background: linear-gradient(135deg, #F6921E 0%, #d47a10 100%); }
+
+    .sim-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 4px; }
+    .sim-subtitle { color: #6b7280; font-size: 0.85rem; }
+
+    .sim-details {
+      background: #f9fafb;
+      margin: 0 28px;
+      border-radius: 12px;
+      padding: 16px 20px;
+    }
+    .sim-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .sim-row:last-child { border-bottom: none; }
+    .sim-row .label { color: #6b7280; font-size: 0.85rem; }
+    .sim-row .value { font-weight: 600; font-size: 0.9rem; }
+
+    .sim-amount-box {
+      text-align: center;
+      padding: 20px 28px 8px;
+    }
+    .sim-amount {
+      font-size: 2.4rem;
+      font-weight: 800;
+      color: #111;
+    }
+    .sim-amount .currency {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #6b7280;
+    }
+
+    .sim-actions {
+      padding: 20px 28px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .sim-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 20px;
+      border: none;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      width: 100%;
+    }
+    .sim-btn-success {
+      background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+      color: #fff;
+    }
+    .sim-btn-success:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(34,197,94,0.4); }
+    .sim-btn-cancel {
+      background: #f3f4f6;
+      color: #374151;
+    }
+    .sim-btn-cancel:hover { background: #e5e7eb; }
+    .sim-btn-fail {
+      background: #fef2f2;
+      color: #dc2626;
+    }
+    .sim-btn-fail:hover { background: #fee2e2; }
+
+    .sim-footnote {
+      text-align: center;
+      padding: 0 28px 20px;
+      font-size: 0.75rem;
+      color: #9ca3af;
+    }
+  </style>
+</head>
+<body>
+
+<div class="sim-container">
+  <div class="sim-card">
+    <div class="sim-header">
+      <div class="sim-badge"><i class="fas fa-flask"></i> Sandbox Simulation Mode</div>
+      <div class="sim-logo" id="simLogo"></div>
+      <h2 class="sim-title" id="simTitle"></h2>
+      <p class="sim-subtitle">Payment Gateway Simulator</p>
+    </div>
+
+    <div class="sim-amount-box">
+      <div class="sim-amount">
+        <span class="currency">৳</span> <span id="simAmount">0</span>
+      </div>
+    </div>
+
+    <div class="sim-details">
+      <div class="sim-row">
+        <span class="label">Invoice</span>
+        <span class="value" id="simInvoice" style="font-family:monospace;font-size:0.8rem;">—</span>
+      </div>
+      <div class="sim-row">
+        <span class="label">Payment ID</span>
+        <span class="value" id="simPaymentId" style="font-family:monospace;font-size:0.8rem;">—</span>
+      </div>
+      <div class="sim-row">
+        <span class="label">Merchant</span>
+        <span class="value">TourVista</span>
+      </div>
+    </div>
+
+    <div class="sim-actions">
+      <button class="sim-btn sim-btn-success" id="btnSuccess">
+        <i class="fas fa-check-circle"></i> Simulate Successful Payment
+      </button>
+      <button class="sim-btn sim-btn-cancel" id="btnCancel">
+        <i class="fas fa-times"></i> Simulate Cancellation
+      </button>
+      <button class="sim-btn sim-btn-fail" id="btnFail">
+        <i class="fas fa-exclamation-triangle"></i> Simulate Failure
+      </button>
+    </div>
+
+    <p class="sim-footnote">
+      This is a local development simulator. In production, users will be redirected to the real bKash/Nagad payment page.
+    </p>
+  </div>
+</div>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const method = params.get('method'); // bkash or nagad
+  const paymentId = params.get('paymentId');
+  const orderId = params.get('orderId');
+  const amount = params.get('amount') || '0';
+  const invoice = params.get('invoice') || '—';
+
+  // Set branding
+  const logo = document.getElementById('simLogo');
+  const title = document.getElementById('simTitle');
+
+  if (method === 'nagad') {
+    logo.className = 'sim-logo nagad';
+    logo.innerHTML = 'N';
+    title.textContent = 'Nagad Payment';
+  } else {
+    logo.className = 'sim-logo bkash';
+    logo.innerHTML = 'b';
+    title.textContent = 'bKash Payment';
+  }
+
+  document.getElementById('simAmount').textContent = parseFloat(amount).toLocaleString();
+  document.getElementById('simInvoice').textContent = invoice;
+  document.getElementById('simPaymentId').textContent = paymentId || orderId || '—';
+
+  // Button handlers — redirect to the real callback endpoints
+  document.getElementById('btnSuccess').addEventListener('click', () => {
+    if (method === 'nagad') {
+      window.location.href = '/api/payments/nagad/callback?order_id=' + encodeURIComponent(orderId) +
+        '&status=Success&status_code=000&payment_ref_id=NAGSIM' + Date.now();
+    } else {
+      window.location.href = '/api/payments/bkash/callback?paymentID=' + encodeURIComponent(paymentId) +
+        '&status=success';
+    }
+  });
+
+  document.getElementById('btnCancel').addEventListener('click', () => {
+    if (method === 'nagad') {
+      window.location.href = '/api/payments/nagad/callback?order_id=' + encodeURIComponent(orderId) +
+        '&status=Aborted&status_code=999';
+    } else {
+      window.location.href = '/api/payments/bkash/callback?paymentID=' + encodeURIComponent(paymentId) +
+        '&status=cancel';
+    }
+  });
+
+  document.getElementById('btnFail').addEventListener('click', () => {
+    if (method === 'nagad') {
+      window.location.href = '/api/payments/nagad/callback?order_id=' + encodeURIComponent(orderId) +
+        '&status=Failed&status_code=500';
+    } else {
+      window.location.href = '/api/payments/bkash/callback?paymentID=' + encodeURIComponent(paymentId) +
+        '&status=failure';
+    }
+  });
+</script>
+</body>
+</html>

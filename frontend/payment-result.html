@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Result — TourVista</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    .result-container {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: var(--bg);
+    }
+    .result-card {
+      background: var(--bg-white);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-xl);
+      max-width: 460px;
+      width: 100%;
+      text-align: center;
+      overflow: hidden;
+    }
+    .result-icon-area {
+      padding: 40px 28px 20px;
+    }
+    .result-icon {
+      width: 90px; height: 90px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 20px;
+      animation: popIn 0.5s ease;
+    }
+    .result-icon.success { background: #e8f5e9; }
+    .result-icon.failed  { background: #fce4ec; }
+    .result-icon.cancel   { background: #fff3e0; }
+    .result-icon.error    { background: #fce4ec; }
+    .result-icon i { font-size: 2.8rem; }
+    .result-icon.success i { color: var(--success); }
+    .result-icon.failed i  { color: var(--danger); }
+    .result-icon.cancel i   { color: #F6921E; }
+    .result-icon.error i    { color: var(--danger); }
+    .result-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 8px; }
+    .result-subtitle { color: var(--text-light); font-size: 0.95rem; margin-bottom: 0; }
+    .result-details {
+      background: var(--bg);
+      margin: 0 28px;
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      text-align: left;
+    }
+    .result-row {
+      display: flex; justify-content: space-between; padding: 8px 0;
+      border-bottom: 1px solid var(--border-light);
+    }
+    .result-row:last-child { border-bottom: none; }
+    .result-row .label { color: var(--text-muted); font-size: 0.85rem; }
+    .result-row .value { font-weight: 600; font-size: 0.9rem; }
+    .result-actions { padding: 24px 28px 32px; display: flex; flex-direction: column; gap: 10px; }
+    @keyframes popIn {
+      0% { transform: scale(0.5); opacity: 0; }
+      60% { transform: scale(1.1); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="result-container">
+    <div class="result-card" id="resultCard">
+      <!-- Filled by JS -->
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const status = params.get('status');
+    const method = params.get('method');
+    const trxID = params.get('trxID');
+    const amount = params.get('amount');
+    const eventId = params.get('eventId');
+    const message = params.get('message');
+
+    const card = document.getElementById('resultCard');
+
+    if (status === 'success') {
+      document.title = 'Payment Successful — TourVista';
+      const methodLabel = method === 'bkash' ? 'bKash' : method === 'nagad' ? 'Nagad' : method;
+      card.innerHTML = `
+        <div class="result-icon-area">
+          <div class="result-icon success">
+            <i class="fas fa-check-circle"></i>
+          </div>
+          <h1 class="result-title" style="color:var(--success);">Payment Successful!</h1>
+          <p class="result-subtitle">Your payment was received and your event registration has been submitted.</p>
+        </div>
+        <div class="result-details">
+          <div class="result-row">
+            <span class="label">Amount Paid</span>
+            <span class="value" style="color:var(--primary);">৳ ${parseFloat(amount || 0).toLocaleString()}</span>
+          </div>
+          <div class="result-row">
+            <span class="label">Payment Method</span>
+            <span class="value">${methodLabel}</span>
+          </div>
+          <div class="result-row">
+            <span class="label">Transaction ID</span>
+            <span class="value" style="font-family:monospace;font-size:0.82rem;">${trxID || '—'}</span>
+          </div>
+          <div class="result-row">
+            <span class="label">Registration Status</span>
+            <span class="value"><span class="badge badge-success" style="font-size:0.75rem;">Paid — Pending Approval</span></span>
+          </div>
+        </div>
+        <div style="padding:16px 28px 0;">
+          <p style="font-size:0.82rem;color:var(--text-muted);">
+            <i class="fas fa-info-circle" style="margin-right:4px;"></i>
+            Your registration is pending admin approval. You'll be notified once approved.
+          </p>
+        </div>
+        <div class="result-actions">
+          <a href="my-events.html" class="btn btn-primary btn-lg" style="width:100%;text-decoration:none;">
+            <i class="fas fa-list"></i> View My Events
+          </a>
+          <a href="events.html" class="btn btn-ghost" style="width:100%;text-decoration:none;">
+            <i class="fas fa-arrow-left"></i> Browse More Events
+          </a>
+        </div>
+      `;
+    } else if (status === 'cancelled') {
+      document.title = 'Payment Cancelled — TourVista';
+      card.innerHTML = `
+        <div class="result-icon-area">
+          <div class="result-icon cancel">
+            <i class="fas fa-times-circle"></i>
+          </div>
+          <h1 class="result-title" style="color:#F6921E;">Payment Cancelled</h1>
+          <p class="result-subtitle">You cancelled the payment. No charges were made. You can try again anytime.</p>
+        </div>
+        <div class="result-actions">
+          ${eventId ? `<a href="event-detail.html?id=${eventId}" class="btn btn-primary btn-lg" style="width:100%;text-decoration:none;">
+            <i class="fas fa-redo"></i> Try Again
+          </a>` : ''}
+          <a href="events.html" class="btn btn-ghost" style="width:100%;text-decoration:none;">
+            <i class="fas fa-arrow-left"></i> Back to Events
+          </a>
+        </div>
+      `;
+    } else if (status === 'failed') {
+      document.title = 'Payment Failed — TourVista';
+      card.innerHTML = `
+        <div class="result-icon-area">
+          <div class="result-icon failed">
+            <i class="fas fa-exclamation-circle"></i>
+          </div>
+          <h1 class="result-title" style="color:var(--danger);">Payment Failed</h1>
+          <p class="result-subtitle">${message || 'The payment could not be processed. Please try again or use a different payment method.'}</p>
+        </div>
+        <div class="result-actions">
+          ${eventId ? `<a href="event-detail.html?id=${eventId}" class="btn btn-primary btn-lg" style="width:100%;text-decoration:none;">
+            <i class="fas fa-redo"></i> Try Again
+          </a>` : ''}
+          <a href="events.html" class="btn btn-ghost" style="width:100%;text-decoration:none;">
+            <i class="fas fa-arrow-left"></i> Back to Events
+          </a>
+        </div>
+      `;
+    } else {
+      document.title = 'Payment Error — TourVista';
+      card.innerHTML = `
+        <div class="result-icon-area">
+          <div class="result-icon error">
+            <i class="fas fa-exclamation-triangle"></i>
+          </div>
+          <h1 class="result-title" style="color:var(--danger);">Something Went Wrong</h1>
+          <p class="result-subtitle">${message || 'An unexpected error occurred. If money was deducted, please contact support with your transaction details.'}</p>
+        </div>
+        <div class="result-actions">
+          <a href="events.html" class="btn btn-primary btn-lg" style="width:100%;text-decoration:none;">
+            <i class="fas fa-arrow-left"></i> Back to Events
+          </a>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>
