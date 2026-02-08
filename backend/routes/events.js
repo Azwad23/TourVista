@@ -106,7 +106,7 @@ router.get('/:id', async (req, res) => {
 
     // Get registration count
     const [regCount] = await pool.query(
-      'SELECT COUNT(*) as count FROM registrations WHERE event_id = ? AND status IN ("approved", "pending")',
+      "SELECT COUNT(*) as count FROM registrations WHERE event_id = ? AND status IN ('approved', 'pending')",
       [req.params.id]
     );
     event.registered_count = regCount[0].count;
