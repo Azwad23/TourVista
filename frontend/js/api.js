@@ -2,9 +2,8 @@
 // TourVista API Service Layer
 // Replaces mock data with real MySQL-backed API calls
 // =============================================
-// Auto-detect: if served by Express (port 3000) use relative path,
-// otherwise point to the backend server explicitly
-const API_BASE = window.location.port === '3000' ? '/api' : 'http://localhost:3000/api';
+// Always use relative path since frontend is served by the same Express server
+const API_BASE = '/api';
 
 // ==================== AUTH HELPERS ====================
 const Auth = {
@@ -430,9 +429,6 @@ const WishlistAPI = {
 // ==================== EVENT IMAGE HELPER ====================
 function getEventImageUrl(imageUrl) {
   if (!imageUrl) return '';
-  if (imageUrl.startsWith('/') && window.location.port !== '3000') {
-    return 'http://localhost:3000' + imageUrl;
-  }
   return imageUrl;
 }
 
@@ -451,10 +447,6 @@ function getEventImageHtml(event, height) {
 // ==================== AVATAR HELPER ====================
 function getAvatarUrl(picturePath) {
   if (!picturePath) return '';
-  // If relative path and not served from port 3000, prepend server origin
-  if (picturePath.startsWith('/') && window.location.port !== '3000') {
-    return 'http://localhost:3000' + picturePath;
-  }
   return picturePath;
 }
 

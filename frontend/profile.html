@@ -192,9 +192,7 @@
       if (user.profile_picture) {
         var imgUrl = user.profile_picture;
         // If relative URL, ensure it works from any origin
-        if (imgUrl.startsWith('/')) {
-          imgUrl = (window.location.port === '3000' ? '' : 'http://localhost:3000') + imgUrl;
-        }
+        // Relative URLs work since frontend is served by the same server
         avatarEl.innerHTML = '<img src="' + imgUrl + '" alt="Profile">';
         avatarEl.className = 'profile-picture-display has-image';
         document.getElementById('removePicBtn').style.display = 'inline-flex';
