@@ -71,12 +71,12 @@
           <div class="form-row">
             <div class="form-group">
               <label class="form-label">First Name</label>
-              <input type="text" class="form-input" placeholder="John" required>
+              <input type="text" class="form-input" id="regFirstName" placeholder="John" required>
               <div class="form-error"></div>
             </div>
             <div class="form-group">
               <label class="form-label">Last Name</label>
-              <input type="text" class="form-input" placeholder="Doe" required>
+              <input type="text" class="form-input" id="regLastName" placeholder="Doe" required>
               <div class="form-error"></div>
             </div>
           </div>
@@ -85,7 +85,7 @@
             <label class="form-label">Email Address</label>
             <div style="position:relative;">
               <i class="fas fa-envelope" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-muted);"></i>
-              <input type="email" class="form-input" style="padding-left:40px;" placeholder="you@example.com" required>
+              <input type="email" class="form-input" id="regEmail" style="padding-left:40px;" placeholder="you@example.com" required>
             </div>
             <div class="form-error"></div>
           </div>
@@ -113,7 +113,7 @@
             </div>
             <div class="form-group">
               <label class="form-label">Confirm Password</label>
-              <input type="password" class="form-input" placeholder="Re-enter password" required autocomplete="new-password">
+              <input type="password" class="form-input" id="regConfirmPassword" placeholder="Re-enter password" required autocomplete="new-password">
               <div class="form-error"></div>
             </div>
           </div>
@@ -169,15 +169,14 @@
     async function handleRegister(e) {
       e.preventDefault();
       const form = e.target;
-      const inputs = form.querySelectorAll('.form-input');
       const btn = form.querySelector('button[type="submit"]');
 
-      const first_name = inputs[0].value.trim();
-      const last_name = inputs[1].value.trim();
-      const email = inputs[2].value.trim();
+      const first_name = document.getElementById('regFirstName').value.trim();
+      const last_name = document.getElementById('regLastName').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
       const phone = document.getElementById('regPhone').value.trim();
-      const password = inputs[4].value;
-      const confirm = inputs[5].value;
+      const password = document.getElementById('regPassword').value;
+      const confirm = document.getElementById('regConfirmPassword').value;
 
       if (phone && !/^\+880\d{10}$/.test(phone)) {
         showToast('Phone must start with +880 followed by 10 digits', 'error');
