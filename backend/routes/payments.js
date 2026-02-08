@@ -1,29 +1,26 @@
 const express = require('express');
 const pool = require('../config/db');
 const { authenticate, requireAdmin } = require('../middleware/auth');
-const bkash = require('../services/bkash');
-const nagad = require('../services/nagad');
 
 const router = express.Router();
 
-// In-memory store for pending payment sessions (use Redis in production)
-const pendingPayments = new Map();
-
-// Simulation mode: skip real API calls in development
-const SIMULATION_MODE = process.env.PAYMENT_SIMULATION === 'true';
-
-// ==================== INITIATE PAYMENT (Participant) ====================
-// Frontend calls this → gets a redirect URL → user pays on bKash/Nagad page
-router.post('/initiate', authenticate, async (req, res) => {
+// ==================== SUBMIT PAYMENT (Participant) ====================
+// User pays manually via bKash/Nagad app, then submits their TrxID here
+router.post('/submit', authenticate, async (req, res) => {
   try {
-    const { event_id, payment_method, emergency_contact, notes } = req.body;
+    const { event_id, payment_method, transaction_id, phone_number, notes } = req.body;
 
-    if (!event_id || !payment_method) {
-      return res.status(400).json({ error: 'Event ID and payment method are required' });
+    if (!event_id || !payment_method || !transaction_id) {
+      return res.status(400).json({ error: 'Event ID, payment method, and transaction ID are required' });
     }
 
     if (!['bkash', 'nagad'].includes(payment_method)) {
       return res.status(400).json({ error: 'Payment method must be bkash or nagad' });
+    }
+
+    const trxId = transaction_id.trim();
+    if (trxId.length < 5) {
+      return res.status(400).json({ error: 'Please enter a valid Transaction ID' });
     }
 
     // Check event exists and is open
@@ -46,311 +43,62 @@ router.post('/initiate', authenticate, async (req, res) => {
       return res.status(400).json({ error: 'You are already registered for this event' });
     }
 
-    const amount = parseFloat(event.cost);
-    const invoiceNumber = `TV-${event_id}-${req.user.id}-${Date.now()}`;
-
-    // ── SIMULATION MODE ── redirect to local sim page instead of real gateway
-    if (SIMULATION_MODE) {
-      const simPaymentId = 'SIM-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
-
-      pendingPayments.set(simPaymentId, {
-        event_id,
-        user_id: req.user.id,
-        amount,
-        payment_method,
-        invoiceNumber,
-        emergency_contact: emergency_contact || null,
-        notes: notes || null,
-        created_at: Date.now()
-      });
-
-      const simParams = new URLSearchParams({
-        method: payment_method,
-        paymentId: simPaymentId,
-        orderId: simPaymentId,
-        amount: String(amount),
-        invoice: invoiceNumber
-      });
-
-      return res.json({
-        payment_method,
-        paymentID: simPaymentId,
-        redirectURL: `/payment-sim.html?${simParams.toString()}`
-      });
+    // Check if TrxID already used
+    const [existingTrx] = await pool.query(
+      'SELECT id FROM payments WHERE transaction_id = ?',
+      [trxId]
+    );
+    if (existingTrx.length > 0) {
+      return res.status(400).json({ error: 'This Transaction ID has already been used' });
     }
 
-    if (payment_method === 'bkash') {
-      // ── bKash Checkout (URL) flow ──
-      const callbackURL = process.env.BKASH_CALLBACK_URL;
-      const result = await bkash.createPayment({
-        amount,
-        invoiceNumber,
-        callbackURL,
-        payerReference: ' '
-      });
+    const connection = await pool.getConnection();
+    try {
+      await connection.beginTransaction();
 
-      // Store session data so callback can complete registration
-      pendingPayments.set(result.paymentID, {
-        event_id,
-        user_id: req.user.id,
-        amount,
-        payment_method: 'bkash',
-        invoiceNumber,
-        emergency_contact: emergency_contact || null,
-        notes: notes || null,
-        created_at: Date.now()
-      });
-
-      return res.json({
-        payment_method: 'bkash',
-        paymentID: result.paymentID,
-        redirectURL: result.bkashURL
-      });
-
-    } else {
-      // ── Nagad flow ──
-      const orderId = nagad.generateOrderId();
-
-      // Step 1: Initialize
-      const initResult = await nagad.initializePayment(orderId);
-
-      if (initResult.reason) {
-        throw new Error(initResult.message || 'Nagad initialization failed');
+      // Determine registration status
+      let regStatus = 'pending';
+      if (event.current_participants >= event.participant_limit) {
+        regStatus = 'waitlisted';
       }
 
-      // Decrypt the sensitive data from response
-      let sensitiveData;
-      try {
-        sensitiveData = JSON.parse(
-          Buffer.from(initResult.sensitiveData || '', 'base64').toString('utf8')
-        );
-      } catch (e) {
-        // If sandbox returns plain JSON
-        sensitiveData = initResult.sensitiveData || initResult;
-      }
+      // Create registration with payment_status = 'unpaid' (pending admin verification)
+      const [regResult] = await connection.query(
+        'INSERT INTO registrations (event_id, user_id, status, payment_status, notes) VALUES (?, ?, ?, ?, ?)',
+        [event_id, req.user.id, regStatus, 'unpaid', notes || null]
+      );
 
-      const paymentReferenceId = sensitiveData.paymentReferenceId || initResult.paymentReferenceId;
-      const challenge = sensitiveData.challenge || initResult.challenge;
+      // Create payment record with status = 'pending' (awaiting admin verification)
+      const [payResult] = await connection.query(
+        'INSERT INTO payments (registration_id, event_id, user_id, amount, payment_method, phone_number, transaction_id, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        [regResult.insertId, event_id, req.user.id, parseFloat(event.cost), payment_method, phone_number || null, trxId, 'pending']
+      );
 
-      // Step 2: Complete (create payment)
-      const callbackURL = process.env.NAGAD_CALLBACK_URL;
-      const completeResult = await nagad.createPayment({
-        orderId,
-        amount,
-        paymentReferenceId,
-        challenge,
-        callbackURL
+      await connection.commit();
+
+      res.status(201).json({
+        message: 'Payment submitted successfully! Admin will verify your transaction.',
+        payment: {
+          id: payResult.insertId,
+          transaction_id: trxId,
+          payment_method,
+          amount: event.cost,
+          status: 'pending'
+        },
+        registration: {
+          id: regResult.insertId,
+          status: regStatus
+        }
       });
-
-      if (!completeResult.callBackUrl) {
-        throw new Error(completeResult.message || 'Nagad payment creation failed');
-      }
-
-      // Store session data
-      pendingPayments.set(orderId, {
-        event_id,
-        user_id: req.user.id,
-        amount,
-        payment_method: 'nagad',
-        invoiceNumber,
-        orderId,
-        emergency_contact: emergency_contact || null,
-        notes: notes || null,
-        created_at: Date.now()
-      });
-
-      return res.json({
-        payment_method: 'nagad',
-        orderId,
-        redirectURL: completeResult.callBackUrl
-      });
+    } catch (err) {
+      await connection.rollback();
+      throw err;
+    } finally {
+      connection.release();
     }
-
   } catch (err) {
-    console.error('Payment initiation error:', err);
-    res.status(500).json({ error: err.message || 'Failed to initiate payment. Please try again.' });
-  }
-});
-
-// ==================== BKASH CALLBACK ====================
-// bKash redirects user here after payment
-router.get('/bkash/callback', async (req, res) => {
-  const { paymentID, status } = req.query;
-
-  if (!paymentID) {
-    return res.redirect('/payment-result.html?status=error&message=Missing+payment+ID');
-  }
-
-  const session = pendingPayments.get(paymentID);
-  if (!session) {
-    return res.redirect('/payment-result.html?status=error&message=Payment+session+expired');
-  }
-
-  if (status === 'cancel') {
-    pendingPayments.delete(paymentID);
-    return res.redirect('/payment-result.html?status=cancelled');
-  }
-
-  if (status === 'failure') {
-    pendingPayments.delete(paymentID);
-    return res.redirect('/payment-result.html?status=failed&message=bKash+payment+failed');
-  }
-
-  // status === 'success' → Execute the payment
-  const connection = await pool.getConnection();
-  try {
-    // In simulation mode or for simulated paymentIDs, skip the real bKash execute call
-    let execResult;
-    if (SIMULATION_MODE || paymentID.startsWith('SIM-')) {
-      execResult = {
-        paymentID,
-        trxID: 'SIMTRX' + Date.now(),
-        transactionStatus: 'Completed',
-        amount: String(session.amount),
-        customerMsisdn: '01XXXXXXXXX'
-      };
-    } else {
-      execResult = await bkash.executePayment(paymentID);
-    }
-
-    await connection.beginTransaction();
-
-    // Determine registration status
-    const [events] = await connection.query('SELECT * FROM events WHERE id = ?', [session.event_id]);
-    const event = events[0];
-    let regStatus = 'pending';
-    if (event.current_participants >= event.participant_limit) {
-      regStatus = 'waitlisted';
-    }
-
-    // Create registration
-    const [regResult] = await connection.query(
-      'INSERT INTO registrations (event_id, user_id, status, payment_status, emergency_contact, notes) VALUES (?, ?, ?, ?, ?, ?)',
-      [session.event_id, session.user_id, regStatus, 'paid', session.emergency_contact, session.notes]
-    );
-
-    // Create payment record
-    await connection.query(
-      'INSERT INTO payments (registration_id, event_id, user_id, amount, payment_method, phone_number, transaction_id, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [regResult.insertId, session.event_id, session.user_id, session.amount, 'bkash',
-       execResult.customerMsisdn || '', execResult.trxID || paymentID, 'completed']
-    );
-
-    await connection.commit();
-    pendingPayments.delete(paymentID);
-
-    const params = new URLSearchParams({
-      status: 'success',
-      method: 'bkash',
-      trxID: execResult.trxID || paymentID,
-      amount: String(session.amount),
-      eventId: String(session.event_id)
-    });
-
-    return res.redirect(`/payment-result.html?${params.toString()}`);
-
-  } catch (err) {
-    await connection.rollback();
-    console.error('bKash callback execution error:', err);
-    pendingPayments.delete(paymentID);
-    return res.redirect('/payment-result.html?status=error&message=' + encodeURIComponent(err.message || 'Payment execution failed'));
-  } finally {
-    connection.release();
-  }
-});
-
-// ==================== NAGAD CALLBACK ====================
-// Nagad redirects user here after payment
-router.get('/nagad/callback', async (req, res) => {
-  const {
-    payment_ref_id,
-    order_id,
-    status: paymentStatus,
-    status_code
-  } = req.query;
-
-  const orderId = order_id;
-
-  if (!orderId) {
-    return res.redirect('/payment-result.html?status=error&message=Missing+order+ID');
-  }
-
-  const session = pendingPayments.get(orderId);
-  if (!session) {
-    return res.redirect('/payment-result.html?status=error&message=Payment+session+expired');
-  }
-
-  if (paymentStatus === 'Aborted' || paymentStatus === 'cancel') {
-    pendingPayments.delete(orderId);
-    return res.redirect('/payment-result.html?status=cancelled');
-  }
-
-  if (paymentStatus !== 'Success') {
-    pendingPayments.delete(orderId);
-    return res.redirect('/payment-result.html?status=failed&message=Nagad+payment+failed');
-  }
-
-  // Verify payment
-  const connection = await pool.getConnection();
-  try {
-    // In simulation mode, skip the real Nagad verify call
-    let verifyResult;
-    if (SIMULATION_MODE || (orderId && orderId.startsWith('SIM-'))) {
-      verifyResult = {
-        status: 'Success',
-        clientMobileNo: '01XXXXXXXXX'
-      };
-    } else {
-      verifyResult = await nagad.verifyPayment(payment_ref_id);
-    }
-
-    if (verifyResult.status !== 'Success') {
-      throw new Error('Nagad payment verification failed');
-    }
-
-    await connection.beginTransaction();
-
-    // Determine registration status
-    const [events] = await connection.query('SELECT * FROM events WHERE id = ?', [session.event_id]);
-    const event = events[0];
-    let regStatus = 'pending';
-    if (event.current_participants >= event.participant_limit) {
-      regStatus = 'waitlisted';
-    }
-
-    // Create registration
-    const [regResult] = await connection.query(
-      'INSERT INTO registrations (event_id, user_id, status, payment_status, emergency_contact, notes) VALUES (?, ?, ?, ?, ?, ?)',
-      [session.event_id, session.user_id, regStatus, 'paid', session.emergency_contact, session.notes]
-    );
-
-    // Create payment record  
-    await connection.query(
-      'INSERT INTO payments (registration_id, event_id, user_id, amount, payment_method, phone_number, transaction_id, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [regResult.insertId, session.event_id, session.user_id, session.amount, 'nagad',
-       verifyResult.clientMobileNo || '', payment_ref_id || orderId, 'completed']
-    );
-
-    await connection.commit();
-    pendingPayments.delete(orderId);
-
-    const params = new URLSearchParams({
-      status: 'success',
-      method: 'nagad',
-      trxID: payment_ref_id || orderId,
-      amount: String(session.amount),
-      eventId: String(session.event_id)
-    });
-
-    return res.redirect(`/payment-result.html?${params.toString()}`);
-
-  } catch (err) {
-    await connection.rollback();
-    console.error('Nagad callback error:', err);
-    pendingPayments.delete(orderId);
-    return res.redirect('/payment-result.html?status=error&message=' + encodeURIComponent(err.message || 'Payment verification failed'));
-  } finally {
-    connection.release();
+    console.error('Payment submission error:', err);
+    res.status(500).json({ error: err.message || 'Failed to submit payment' });
   }
 });
 
@@ -375,30 +123,149 @@ router.get('/my', authenticate, async (req, res) => {
 // ==================== GET ALL PAYMENTS (Admin) ====================
 router.get('/all', authenticate, requireAdmin, async (req, res) => {
   try {
-    const [payments] = await pool.query(
-      `SELECT p.*, e.title as event_title,
-              u.first_name, u.last_name, u.email
-       FROM payments p
-       JOIN events e ON p.event_id = e.id
-       JOIN users u ON p.user_id = u.id
-       ORDER BY p.paid_at DESC`
+    const { status, event_id } = req.query;
+
+    let query = `
+      SELECT p.*, e.title as event_title, e.category,
+             u.first_name, u.last_name, u.email, u.avatar, u.phone as user_phone
+      FROM payments p
+      JOIN events e ON p.event_id = e.id
+      JOIN users u ON p.user_id = u.id
+      WHERE 1=1
+    `;
+    const params = [];
+
+    if (status && status !== 'all') {
+      query += ' AND p.status = ?';
+      params.push(status);
+    }
+    if (event_id) {
+      query += ' AND p.event_id = ?';
+      params.push(event_id);
+    }
+
+    query += ' ORDER BY p.paid_at DESC';
+
+    const [payments] = await pool.query(query, params);
+
+    // Get counts
+    const [counts] = await pool.query(
+      `SELECT
+        COUNT(*) as total,
+        SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
+        SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as verified,
+        SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as rejected
+      FROM payments`
     );
-    res.json({ payments });
+
+    res.json({ payments, counts: counts[0] });
   } catch (err) {
     console.error('Get all payments error:', err);
     res.status(500).json({ error: 'Server error' });
   }
 });
 
-// ==================== GET SINGLE PAYMENT ====================
-router.get('/:id', authenticate, async (req, res) => {
+// ==================== VERIFY PAYMENT (Admin) ====================
+router.put('/:id/verify', authenticate, requireAdmin, async (req, res) => {
+  try {
+    const { admin_notes } = req.body;
+
+    const [payments] = await pool.query('SELECT * FROM payments WHERE id = ?', [req.params.id]);
+    if (payments.length === 0) {
+      return res.status(404).json({ error: 'Payment not found' });
+    }
+
+    const payment = payments[0];
+    if (payment.status === 'completed') {
+      return res.status(400).json({ error: 'Payment already verified' });
+    }
+
+    const connection = await pool.getConnection();
+    try {
+      await connection.beginTransaction();
+
+      // Update payment status to completed
+      await connection.query(
+        "UPDATE payments SET status = 'completed', admin_notes = ? WHERE id = ?",
+        [admin_notes || 'Verified by admin', req.params.id]
+      );
+
+      // Update registration payment_status to paid
+      if (payment.registration_id) {
+        await connection.query(
+          "UPDATE registrations SET payment_status = 'paid' WHERE id = ?",
+          [payment.registration_id]
+        );
+      }
+
+      await connection.commit();
+      res.json({ message: 'Payment verified successfully' });
+    } catch (err) {
+      await connection.rollback();
+      throw err;
+    } finally {
+      connection.release();
+    }
+  } catch (err) {
+    console.error('Verify payment error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// ==================== REJECT PAYMENT (Admin) ====================
+router.put('/:id/reject', authenticate, requireAdmin, async (req, res) => {
+  try {
+    const { admin_notes } = req.body;
+
+    const [payments] = await pool.query('SELECT * FROM payments WHERE id = ?', [req.params.id]);
+    if (payments.length === 0) {
+      return res.status(404).json({ error: 'Payment not found' });
+    }
+
+    const payment = payments[0];
+
+    const connection = await pool.getConnection();
+    try {
+      await connection.beginTransaction();
+
+      // Update payment status to failed (rejected)
+      await connection.query(
+        "UPDATE payments SET status = 'failed', admin_notes = ? WHERE id = ?",
+        [admin_notes || 'Rejected by admin', req.params.id]
+      );
+
+      // Reject the registration too
+      if (payment.registration_id) {
+        await connection.query(
+          "UPDATE registrations SET status = 'rejected', payment_status = 'unpaid' WHERE id = ?",
+          [payment.registration_id]
+        );
+      }
+
+      await connection.commit();
+      res.json({ message: 'Payment rejected' });
+    } catch (err) {
+      await connection.rollback();
+      throw err;
+    } finally {
+      connection.release();
+    }
+  } catch (err) {
+    console.error('Reject payment error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// ==================== GET SINGLE PAYMENT (Admin) ====================
+router.get('/:id', authenticate, requireAdmin, async (req, res) => {
   try {
     const [payments] = await pool.query(
-      `SELECT p.*, e.title as event_title
+      `SELECT p.*, e.title as event_title, u.first_name, u.last_name, u.email
        FROM payments p
        JOIN events e ON p.event_id = e.id
-       WHERE p.id = ? AND p.user_id = ?`,
-      [req.params.id, req.user.id]
+       JOIN users u ON p.user_id = u.id
+       WHERE p.id = ?`,
+      [req.params.id]
     );
     if (payments.length === 0) {
       return res.status(404).json({ error: 'Payment not found' });
@@ -409,15 +276,5 @@ router.get('/:id', authenticate, async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
-
-// Clean up expired pending payments (older than 30 minutes)
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, session] of pendingPayments) {
-    if (now - session.created_at > 30 * 60 * 1000) {
-      pendingPayments.delete(key);
-    }
-  }
-}, 5 * 60 * 1000);
 
 module.exports = router;

@@ -129,6 +129,24 @@
         <!-- Payment info shown after selecting method -->
         <div id="paymentInfoSection" style="display:none;margin-top:20px;">
           <div class="payment-instruction-box" id="paymentInstructions"></div>
+
+          <!-- TrxID & Phone Input -->
+          <div style="margin-top:16px;">
+            <div class="form-group">
+              <label class="form-label" style="font-weight:600;">
+                <i class="fas fa-receipt" style="margin-right:4px;color:var(--primary);"></i> Transaction ID (TrxID) *
+              </label>
+              <input type="text" class="form-input" id="transactionId" placeholder="Enter your bKash/Nagad TrxID" required style="font-family:monospace;letter-spacing:1px;font-size:1rem;">
+              <small style="color:var(--text-muted);font-size:0.75rem;">You will find this in your bKash/Nagad app transaction history</small>
+            </div>
+            <div class="form-group" style="margin-top:10px;">
+              <label class="form-label" style="font-weight:600;">
+                <i class="fas fa-phone" style="margin-right:4px;color:var(--primary);"></i> Your Mobile Number
+              </label>
+              <input type="text" class="form-input" id="paymentPhone" placeholder="01XXXXXXXXX" maxlength="11">
+              <small style="color:var(--text-muted);font-size:0.75rem;">The number you sent payment from</small>
+            </div>
+          </div>
         </div>
 
         <div class="form-group" style="margin-top:16px;">
@@ -143,7 +161,7 @@
       </div>
       <div class="modal-footer" style="flex-direction:column;gap:8px;">
         <button class="btn btn-primary btn-lg" id="payAndRegisterBtn" style="width:100%;" onclick="submitPaymentAndRegistration()" disabled>
-          <i class="fas fa-lock" style="margin-right:6px;"></i> Pay & Register — <span id="payBtnAmount"></span>
+          <i class="fas fa-paper-plane" style="margin-right:6px;"></i> Submit Payment & Register — <span id="payBtnAmount"></span>
         </button>
         <button class="btn btn-ghost" style="width:100%;" onclick="closeModal('registerModal')">Cancel</button>
       </div>
@@ -432,28 +450,46 @@
       document.getElementById('payAndRegisterBtn').disabled = false;
 
       const instructions = document.getElementById('paymentInstructions');
+      const merchantNumber = method === 'bkash' ? (currentEvent.merchant_bkash || 'Not set') : (currentEvent.merchant_nagad || 'Not set');
+      const brandColor = method === 'bkash' ? '#E2136E' : '#F6921E';
+      const brandName = method === 'bkash' ? 'bKash' : 'Nagad';
+      const amount = formatCurrency(currentEvent.cost);
+      const customInstructions = currentEvent.payment_instructions || '';
 
-      if (method === 'bkash') {
-        instructions.innerHTML = `
-          <div class="payment-instruction-header" style="color:#E2136E;">
-            <i class="fas fa-info-circle"></i> bKash Payment
+      instructions.innerHTML = `
+        <div class="payment-instruction-header" style="color:${brandColor};">
+          <i class="fas fa-info-circle"></i> ${brandName} Payment Instructions
+        </div>
+        <div style="background:linear-gradient(135deg, ${brandColor}11, ${brandColor}08);border:1.5px solid ${brandColor}33;border-radius:var(--radius);padding:16px;margin-top:10px;">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+            <div style="width:48px;height:48px;border-radius:12px;background:${brandColor};display:flex;align-items:center;justify-content:center;">
+              <i class="fas fa-mobile-alt" style="color:white;font-size:1.2rem;"></i>
+            </div>
+            <div>
+              <div style="font-size:0.8rem;color:var(--text-muted);">Send Money to</div>
+              <div style="font-size:1.3rem;font-weight:800;color:${brandColor};letter-spacing:1px;font-family:monospace;">${merchantNumber}</div>
+            </div>
           </div>
-          <p style="font-size:0.85rem;color:var(--text);line-height:1.6;margin:8px 0 0;">
-            You'll be redirected to the <strong>official bKash payment page</strong> to complete payment securely.
-            Enter your bKash wallet number, OTP, and PIN on the bKash page. After payment, you'll be brought back here automatically.
-          </p>
-        `;
-      } else {
-        instructions.innerHTML = `
-          <div class="payment-instruction-header" style="color:#F6921E;">
-            <i class="fas fa-info-circle"></i> Nagad Payment
+          <div style="font-size:0.95rem;font-weight:700;color:var(--text);margin-bottom:12px;">
+            Amount: <span style="color:${brandColor};font-size:1.1rem;">${amount}</span>
           </div>
-          <p style="font-size:0.85rem;color:var(--text);line-height:1.6;margin:8px 0 0;">
-            You'll be redirected to the <strong>official Nagad payment page</strong> to complete payment securely.
-            Enter your Nagad wallet number and PIN on the Nagad page. After payment, you'll be brought back here automatically.
-          </p>
-        `;
-      }
+          <div style="font-size:0.85rem;color:var(--text);line-height:1.7;">
+            <div style="font-weight:600;margin-bottom:6px;">Steps:</div>
+            <div>1️⃣ Open your <strong>${brandName}</strong> app</div>
+            <div>2️⃣ Go to <strong>Send Money</strong></div>
+            <div>3️⃣ Enter number: <strong style="color:${brandColor};">${merchantNumber}</strong></div>
+            <div>4️⃣ Enter amount: <strong>${amount}</strong></div>
+            <div>5️⃣ Confirm with your PIN</div>
+            <div>6️⃣ Copy the <strong>TrxID</strong> from the confirmation message</div>
+            <div>7️⃣ Paste the TrxID below and submit</div>
+          </div>
+          ${customInstructions ? `
+            <div style="margin-top:12px;padding:10px;background:rgba(0,0,0,0.04);border-radius:var(--radius);font-size:0.85rem;color:var(--text-light);">
+              <i class="fas fa-exclamation-triangle" style="color:var(--warning);margin-right:4px;"></i> <strong>Note:</strong> ${customInstructions}
+            </div>
+          ` : ''}
+        </div>
+      `;
     }
 
     async function submitPaymentAndRegistration() {
@@ -474,28 +510,37 @@
         return;
       }
 
+      const transactionId = document.getElementById('transactionId').value.trim();
+      if (!transactionId || transactionId.length < 5) {
+        showToast('Please enter a valid Transaction ID (TrxID)', 'warning');
+        document.getElementById('transactionId').focus();
+        return;
+      }
+
       const btn = document.getElementById('payAndRegisterBtn');
       const originalText = btn.innerHTML;
       btn.disabled = true;
-      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Redirecting to ' + (selectedPaymentMethod === 'bkash' ? 'bKash' : 'Nagad') + '...';
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
 
       try {
         const notes = document.getElementById('specialNotes').value.trim();
-        const result = await PaymentsAPI.initiate({
+        const phone = document.getElementById('paymentPhone').value.trim();
+        const result = await PaymentsAPI.submit({
           event_id: currentEvent.id,
           payment_method: selectedPaymentMethod,
-          emergency_contact: '',
+          transaction_id: transactionId,
+          phone_number: phone || null,
           notes: notes || null
         });
 
-        // Redirect to bKash/Nagad payment page
-        if (result.redirectURL) {
-          window.location.href = result.redirectURL;
-        } else {
-          throw new Error('No redirect URL received from payment gateway');
-        }
+        closeModal('registerModal');
+        showToast(result.message || 'Payment submitted! Admin will verify your TrxID.', 'success');
+
+        // Update the registration button area
+        updateRegistrationButton('pending', 'unpaid');
+
       } catch (err) {
-        showToast(err.message || 'Payment initiation failed. Please try again.', 'error');
+        showToast(err.message || 'Payment submission failed. Please try again.', 'error');
         btn.disabled = false;
         btn.innerHTML = originalText;
       }

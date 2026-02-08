@@ -213,8 +213,8 @@ const EventsAPI = {
 // ==================== REGISTRATIONS API ====================
 // ==================== PAYMENTS API ====================
 const PaymentsAPI = {
-  async initiate(paymentData) {
-    return apiCall('/payments/initiate', {
+  async submit(paymentData) {
+    return apiCall('/payments/submit', {
       method: 'POST',
       body: JSON.stringify(paymentData)
     });
@@ -224,12 +224,27 @@ const PaymentsAPI = {
     return apiCall('/payments/my');
   },
 
-  async getAll() {
-    return apiCall('/payments/all');
+  async getAll(params = {}) {
+    const query = new URLSearchParams(params).toString();
+    return apiCall(`/payments/all${query ? '?' + query : ''}`);
   },
 
   async getById(id) {
     return apiCall(`/payments/${id}`);
+  },
+
+  async verify(id, adminNotes) {
+    return apiCall(`/payments/${id}/verify`, {
+      method: 'PUT',
+      body: JSON.stringify({ admin_notes: adminNotes })
+    });
+  },
+
+  async reject(id, adminNotes) {
+    return apiCall(`/payments/${id}/reject`, {
+      method: 'PUT',
+      body: JSON.stringify({ admin_notes: adminNotes })
+    });
   }
 };
 

@@ -124,7 +124,7 @@ router.post('/', authenticate, requireAdmin, eventUpload.single('image'), async 
     const {
       title, description, category, status, start_date, end_date,
       cost, participant_limit, destination, meeting_point, difficulty,
-      gradient, icon
+      gradient, icon, merchant_bkash, merchant_nagad, payment_instructions
     } = req.body;
 
     // Validate required fields
@@ -139,12 +139,14 @@ router.post('/', authenticate, requireAdmin, eventUpload.single('image'), async 
     }
 
     const [result] = await pool.query(
-      `INSERT INTO events (title, description, category, status, start_date, end_date, cost, participant_limit, destination, meeting_point, difficulty, gradient, icon, image_url, created_by)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO events (title, description, category, status, start_date, end_date, cost, participant_limit, destination, meeting_point, difficulty, gradient, icon, image_url, merchant_bkash, merchant_nagad, payment_instructions, created_by)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [title, description || null, category, status || 'open', start_date, end_date,
        cost, participant_limit, destination || null, meeting_point || null,
        difficulty || 'moderate', gradient || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-       icon || 'fas fa-map-marked-alt', imageUrl, req.user.id]
+       icon || 'fas fa-map-marked-alt', imageUrl,
+       merchant_bkash || null, merchant_nagad || null, payment_instructions || null,
+       req.user.id]
     );
 
     // Add itinerary if provided
@@ -181,7 +183,7 @@ router.put('/:id', authenticate, requireAdmin, eventUpload.single('image'), asyn
     const {
       title, description, category, status, start_date, end_date,
       cost, participant_limit, destination, meeting_point, difficulty,
-      gradient, icon
+      gradient, icon, merchant_bkash, merchant_nagad, payment_instructions
     } = req.body;
 
     // Handle image: new upload, keep existing, or remove
@@ -206,11 +208,14 @@ router.put('/:id', authenticate, requireAdmin, eventUpload.single('image'), asyn
 
     await pool.query(
       `UPDATE events SET title=?, description=?, category=?, status=?, start_date=?, end_date=?,
-       cost=?, participant_limit=?, destination=?, meeting_point=?, difficulty=?, gradient=?, icon=?, image_url=?
+       cost=?, participant_limit=?, destination=?, meeting_point=?, difficulty=?, gradient=?, icon=?, image_url=?,
+       merchant_bkash=?, merchant_nagad=?, payment_instructions=?
        WHERE id=?`,
       [title, description, category, status, start_date, end_date,
        cost, participant_limit, destination, meeting_point, difficulty,
-       gradient, icon, imageUrl, req.params.id]
+       gradient, icon, imageUrl,
+       merchant_bkash || null, merchant_nagad || null, payment_instructions || null,
+       req.params.id]
     );
 
     // Update itinerary if provided

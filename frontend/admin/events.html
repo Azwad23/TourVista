@@ -48,6 +48,7 @@
           <div class="sidebar-nav-label">Management</div>
           <a href="events.html" class="active"><i class="fas fa-calendar-alt"></i> Events</a>
           <a href="approvals.html"><i class="fas fa-user-check"></i> Approvals <span class="admin-pending-badge nav-badge">0</span></a>
+          <a href="payments.html"><i class="fas fa-money-check-alt"></i> Payments</a>
           <a href="users.html"><i class="fas fa-users"></i> Users</a>
         </div>
         <div class="sidebar-nav-group">
@@ -188,7 +189,7 @@
 
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
             <div class="form-group">
-              <label class="form-label">Cost ($)</label>
+              <label class="form-label">Cost (৳)</label>
               <input type="number" class="form-input" id="eventCost" placeholder="0" min="0">
             </div>
             <div class="form-group">
@@ -202,6 +203,27 @@
                 <option value="moderate" selected>Moderate</option>
                 <option value="challenging">Challenging</option>
               </select>
+            </div>
+          </div>
+
+          <!-- Payment / Merchant Settings -->
+          <div style="margin-top:8px;padding:16px;background:var(--bg);border-radius:var(--radius-md);border:1px solid var(--border);">
+            <label class="form-label" style="font-weight:700;font-size:1rem;margin-bottom:14px;display:block;">
+              <i class="fas fa-wallet" style="margin-right:6px;color:var(--primary);"></i> Payment Settings
+            </label>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+              <div class="form-group">
+                <label class="form-label"><span style="color:#E2136E;font-weight:700;">bKash</span> Merchant Number</label>
+                <input type="text" class="form-input" id="eventMerchantBkash" placeholder="e.g. 01XXXXXXXXX" maxlength="20">
+              </div>
+              <div class="form-group">
+                <label class="form-label"><span style="color:#F6921E;font-weight:700;">Nagad</span> Merchant Number</label>
+                <input type="text" class="form-input" id="eventMerchantNagad" placeholder="e.g. 01XXXXXXXXX" maxlength="20">
+              </div>
+            </div>
+            <div class="form-group" style="margin-top:4px;">
+              <label class="form-label">Payment Instructions <span style="color:var(--text-muted);font-weight:400;">(shown to users)</span></label>
+              <textarea class="form-textarea" id="eventPaymentInstructions" placeholder="e.g. Send the exact amount via Send Money. Use your registered name as reference. Do NOT use Cash Out." rows="3"></textarea>
             </div>
           </div>
         </form>

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Verification — TourVista Admin</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body data-page="admin-payments">
+
+  <!-- Header -->
+  <header class="header" id="header">
+    <div class="header-inner">
+      <div style="display:flex;align-items:center;gap:16px;">
+        <a href="../index.html" class="logo"><i class="fas fa-globe-americas"></i><span>TourVista</span></a>
+        <span class="badge badge-info" style="font-size:0.7rem;">ADMIN</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <a href="notifications.html" class="btn btn-icon btn-ghost" style="position:relative;" title="Notifications">
+          <i class="fas fa-bell"></i>
+          <span class="admin-notif-dot" style="position:absolute;top:4px;right:4px;width:8px;height:8px;border-radius:50%;background:var(--danger);display:none;"></span>
+        </a>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="admin-header-avatar" style="width:36px;height:36px;border-radius:50%;overflow:hidden;"></div>
+          <span class="admin-header-name" style="font-weight:600;font-size:0.85rem;">Admin</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-user">
+          <div class="sidebar-avatar admin-sidebar-avatar">--</div>
+          <div class="sidebar-user-info"><h4 class="admin-sidebar-name">Loading...</h4><p>Administrator</p></div>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="sidebar-nav-group">
+          <div class="sidebar-nav-label">Overview</div>
+          <a href="dashboard.html"><i class="fas fa-chart-pie"></i> Dashboard</a>
+        </div>
+        <div class="sidebar-nav-group">
+          <div class="sidebar-nav-label">Management</div>
+          <a href="events.html"><i class="fas fa-calendar-alt"></i> Events</a>
+          <a href="approvals.html"><i class="fas fa-user-check"></i> Approvals <span class="admin-pending-badge nav-badge">0</span></a>
+          <a href="payments.html" class="active"><i class="fas fa-money-check-alt"></i> Payments</a>
+          <a href="users.html"><i class="fas fa-users"></i> Users</a>
+        </div>
+        <div class="sidebar-nav-group">
+          <div class="sidebar-nav-label">Tools</div>
+          <a href="chatbot.html"><i class="fas fa-robot"></i> Chatbot Monitor</a>
+          <a href="settings.html"><i class="fas fa-cog"></i> Settings</a>
+        </div>
+        <div class="sidebar-nav-group" style="margin-top:16px;">
+          <a href="#" onclick="event.preventDefault(); Auth.logout();"><i class="fas fa-sign-out-alt"></i> Log Out</a>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="dash-content">
+      <div class="dash-header">
+        <div>
+          <h1>Payment Verification</h1>
+          <p>Verify bKash/Nagad transaction IDs submitted by participants</p>
+        </div>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="stats-grid" style="grid-template-columns: repeat(3, 1fr);">
+        <div class="stat-card">
+          <div class="stat-icon orange"><i class="fas fa-clock"></i></div>
+          <div class="stat-info">
+            <h3 id="pendingPayments">0</h3>
+            <p>Pending Verification</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green"><i class="fas fa-check-double"></i></div>
+          <div class="stat-info">
+            <h3 id="verifiedPayments">0</h3>
+            <p>Verified</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon red"><i class="fas fa-ban"></i></div>
+          <div class="stat-info">
+            <h3 id="rejectedPayments">0</h3>
+            <p>Rejected</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="toolbar">
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" placeholder="Search by TrxID, name, or event..." id="paymentSearch" oninput="searchPayments(this.value)">
+        </div>
+        <div class="filters">
+          <button class="filter-chip active" onclick="filterPayments('all')">All</button>
+          <button class="filter-chip" onclick="filterPayments('pending')">
+            <span style="width:8px;height:8px;border-radius:50%;background:var(--warning);display:inline-block;"></span> Pending
+          </button>
+          <button class="filter-chip" onclick="filterPayments('completed')">
+            <span style="width:8px;height:8px;border-radius:50%;background:var(--success);display:inline-block;"></span> Verified
+          </button>
+          <button class="filter-chip" onclick="filterPayments('failed')">
+            <span style="width:8px;height:8px;border-radius:50%;background:var(--danger);display:inline-block;"></span> Rejected
+          </button>
+        </div>
+      </div>
+
+      <!-- Payments Table -->
+      <div class="table-container">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Participant</th>
+              <th>Event</th>
+              <th>Method</th>
+              <th>TrxID</th>
+              <th>Amount</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="paymentsTable"></tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/app.js"></script>
+  <script src="../js/admin.js"></script>
+  <script>
+    if (!Auth.isLoggedIn() || !Auth.isAdmin()) { window.location.href = '../login.html'; }
+  </script>
+
+  <script>
+    let allPayments = [];
+
+    document.addEventListener('DOMContentLoaded', function() {
+      loadPayments();
+    });
+
+    async function loadPayments(filter) {
+      try {
+        const params = {};
+        if (filter && filter !== 'all') params.status = filter;
+        const data = await PaymentsAPI.getAll(params);
+        allPayments = data.payments || [];
+        const counts = data.counts || {};
+
+        document.getElementById('pendingPayments').textContent = counts.pending || 0;
+        document.getElementById('verifiedPayments').textContent = counts.verified || 0;
+        document.getElementById('rejectedPayments').textContent = counts.rejected || 0;
+
+        renderPaymentsTable(allPayments);
+      } catch (err) {
+        console.error('Load payments error:', err);
+        document.getElementById('paymentsTable').innerHTML = '<tr><td colspan="8">Failed to load payments</td></tr>';
+      }
+    }
+
+    function renderPaymentsTable(payments) {
+      const container = document.getElementById('paymentsTable');
+      if (payments.length === 0) {
+        container.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text-muted);"><i class="fas fa-inbox" style="font-size:2rem;margin-bottom:10px;display:block;"></i>No payments found</td></tr>';
+        return;
+      }
+
+      container.innerHTML = payments.map(p => {
+        const methodBadge = p.payment_method === 'bkash'
+          ? '<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;background:#E2136E15;color:#E2136E;font-weight:700;font-size:0.8rem;"><span style="font-weight:800;">b</span>Kash</span>'
+          : '<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;background:#F6921E15;color:#F6921E;font-weight:700;font-size:0.8rem;"><span style="font-weight:800;">N</span>agad</span>';
+
+        const statusMap = {
+          pending: '<span class="badge badge-warning">Pending</span>',
+          completed: '<span class="badge badge-success">Verified</span>',
+          failed: '<span class="badge badge-danger">Rejected</span>'
+        };
+
+        return `
+          <tr>
+            <td>
+              <div class="user-cell">
+                <div class="avatar">${p.avatar || ((p.first_name||'?')[0] + (p.last_name||'?')[0]).toUpperCase()}</div>
+                <div>
+                  <div class="name">${p.first_name || ''} ${p.last_name || ''}</div>
+                  <div class="email">${p.email || ''}</div>
+                  ${p.phone_number ? '<div class="email"><i class="fas fa-phone" style="font-size:0.65rem;margin-right:3px;"></i>' + p.phone_number + '</div>' : ''}
+                </div>
+              </div>
+            </td>
+            <td>${p.event_title ? p.event_title.substring(0, 25) + (p.event_title.length > 25 ? '...' : '') : 'N/A'}</td>
+            <td>${methodBadge}</td>
+            <td>
+              <code style="padding:4px 8px;background:var(--bg);border-radius:4px;font-size:0.85rem;font-weight:600;letter-spacing:0.5px;">${p.transaction_id}</code>
+            </td>
+            <td style="font-weight:600;">${formatCurrency(p.amount)}</td>
+            <td style="font-size:0.85rem;">${formatDate(p.paid_at)}</td>
+            <td>${statusMap[p.status] || p.status}</td>
+            <td>
+              ${p.status === 'pending' ? `
+                <div style="display:flex;gap:6px;">
+                  <button class="btn btn-success btn-sm" onclick="verifyPayment(${p.id}, '${p.transaction_id}')" title="Verify TrxID">
+                    <i class="fas fa-check"></i> Verify
+                  </button>
+                  <button class="btn btn-danger btn-sm" onclick="rejectPayment(${p.id}, '${p.transaction_id}')" title="Reject">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              ` : `
+                <span style="color:var(--text-muted);font-size:0.85rem;">${p.admin_notes ? '<i class="fas fa-comment-dots" title="' + p.admin_notes + '"></i>' : '—'}</span>
+              `}
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function verifyPayment(id, trxId) {
+      if (!confirm('Verify payment with TrxID: ' + trxId + '?\n\nThis will mark the payment as verified and the registration payment as paid.')) return;
+
+      try {
+        await PaymentsAPI.verify(id, 'TrxID verified by admin');
+        showToast('Payment verified successfully!', 'success');
+        await loadPayments();
+      } catch (err) {
+        showToast(err.message || 'Verification failed', 'error');
+      }
+    }
+
+    async function rejectPayment(id, trxId) {
+      const reason = prompt('Reject payment with TrxID: ' + trxId + '\n\nEnter reason (optional):');
+      if (reason === null) return; // cancelled
+
+      try {
+        await PaymentsAPI.reject(id, reason || 'Invalid transaction ID');
+        showToast('Payment rejected', 'warning');
+        await loadPayments();
+      } catch (err) {
+        showToast(err.message || 'Rejection failed', 'error');
+      }
+    }
+
+    function filterPayments(status) {
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      event.target.classList.add('active');
+      loadPayments(status);
+    }
+
+    function searchPayments(query) {
+      if (!query) {
+        renderPaymentsTable(allPayments);
+        return;
+      }
+      const q = query.toLowerCase();
+      const filtered = allPayments.filter(p =>
+        (p.transaction_id && p.transaction_id.toLowerCase().includes(q)) ||
+        (p.first_name && p.first_name.toLowerCase().includes(q)) ||
+        (p.last_name && p.last_name.toLowerCase().includes(q)) ||
+        (p.email && p.email.toLowerCase().includes(q)) ||
+        (p.event_title && p.event_title.toLowerCase().includes(q))
+      );
+      renderPaymentsTable(filtered);
+    }
+  </script>
+</body>
+</html>

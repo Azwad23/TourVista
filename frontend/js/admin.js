@@ -263,6 +263,14 @@ async function editEvent(id) {
       showExistingEventImage(event.image_url);
     }
 
+    // Merchant / payment fields
+    var bkashEl = document.getElementById('eventMerchantBkash');
+    if (bkashEl) bkashEl.value = event.merchant_bkash || '';
+    var nagadEl = document.getElementById('eventMerchantNagad');
+    if (nagadEl) nagadEl.value = event.merchant_nagad || '';
+    var instrEl = document.getElementById('eventPaymentInstructions');
+    if (instrEl) instrEl.value = event.payment_instructions || '';
+
     // Store edit ID
     document.getElementById('eventModal').setAttribute('data-edit-id', id);
     openModal('eventModal');
@@ -307,7 +315,10 @@ async function saveEvent() {
     status: document.getElementById('eventStatus').value,
     destination: destEl ? destEl.value : '',
     meeting_point: mpEl ? mpEl.value : '',
-    difficulty: diffEl ? diffEl.value : 'moderate'
+    difficulty: diffEl ? diffEl.value : 'moderate',
+    merchant_bkash: document.getElementById('eventMerchantBkash') ? document.getElementById('eventMerchantBkash').value.trim() : '',
+    merchant_nagad: document.getElementById('eventMerchantNagad') ? document.getElementById('eventMerchantNagad').value.trim() : '',
+    payment_instructions: document.getElementById('eventPaymentInstructions') ? document.getElementById('eventPaymentInstructions').value.trim() : ''
   };
 
   const editId = document.getElementById('eventModal').getAttribute('data-edit-id');
