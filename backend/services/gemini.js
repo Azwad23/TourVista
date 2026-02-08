@@ -46,10 +46,11 @@ const HISTORY_TTL = 30 * 60 * 1000; // 30 minutes
 async function getEventContext() {
   try {
     const [events] = await pool.query(
-      `SELECT title, category, destination, start_date, end_date, cost,
-              participant_limit, current_participants, difficulty, status, meeting_point
-       FROM events WHERE status IN ('open', 'full')
-       ORDER BY start_date ASC LIMIT 10`
+      `SELECT e.title, e.category, e.destination, e.start_date, e.end_date, e.cost,
+              e.participant_limit, e.difficulty, e.status, e.meeting_point,
+              COALESCE((SELECT COUNT(*) FROM registrations r WHERE r.event_id = e.id AND r.status IN ('approved','pending')), 0) as current_participants
+       FROM events e WHERE e.status IN ('open', 'full')
+       ORDER BY e.start_date ASC LIMIT 10`
     );
 
     if (events.length === 0) return '';

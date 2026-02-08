@@ -143,7 +143,7 @@ router.post('/login', [
         email: user.email,
         role: user.role,
         avatar: user.avatar,
-        profile_picture: user.profile_picture
+        profile_picture: user.profile_picture && user.profile_picture.startsWith('data:') ? '/api/users/profile-picture/' + user.id : user.profile_picture
       }
     });
   } catch (err) {
@@ -164,7 +164,12 @@ router.get('/me', authenticate, async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    res.json({ user: users[0] });
+    const u = users[0];
+    if (u.profile_picture && u.profile_picture.startsWith('data:')) {
+      u.profile_picture = '/api/users/profile-picture/' + u.id;
+    }
+
+    res.json({ user: u });
   } catch (err) {
     console.error('Get me error:', err);
     res.status(500).json({ error: 'Server error' });

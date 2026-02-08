@@ -23,7 +23,7 @@ function generateTokenAndRedirect(req, res) {
     email: user.email,
     role: user.role || 'participant',
     avatar: user.avatar,
-    profile_picture: user.profile_picture
+    profile_picture: user.profile_picture && user.profile_picture.startsWith('data:') ? '/api/users/profile-picture/' + user.id : user.profile_picture
   });
 
   // Redirect to a frontend callback page that stores the token

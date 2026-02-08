@@ -8,22 +8,19 @@ const { authenticate, requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
-// ==================== MULTER SETUP ====================
-const uploadDir = path.join(__dirname, '..', 'uploads', 'avatars');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
+// Rewrite profile_picture: data URIs become serving URLs
+function rewriteProfilePic(user) {
+  if (user && user.profile_picture) {
+    if (user.profile_picture.startsWith('data:')) {
+      user.profile_picture = '/api/users/profile-picture/' + user.id;
+    }
+  }
+  return user;
 }
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadDir),
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, `user-${req.user.id}-${Date.now()}${ext}`);
-  }
-});
-
+// ==================== MULTER SETUP (memory storage for DB) ====================
 const upload = multer({
-  storage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
   fileFilter: (req, file, cb) => {
     const allowed = /jpeg|jpg|png|gif|webp/;
@@ -33,6 +30,12 @@ const upload = multer({
     cb(new Error('Only image files (jpg, png, gif, webp) are allowed'));
   }
 });
+
+// Helper: convert file buffer to data URI
+function fileToDataUri(file) {
+  const base64 = file.buffer.toString('base64');
+  return `data:${file.mimetype};base64,${base64}`;
+}
 
 // ==================== GET ALL USERS (Admin) ====================
 router.get('/', authenticate, requireAdmin, async (req, res) => {
@@ -56,6 +59,7 @@ router.get('/', authenticate, requireAdmin, async (req, res) => {
     query += ' ORDER BY created_at DESC';
 
     const [users] = await pool.query(query, params);
+    users.forEach(rewriteProfilePic);
 
     // Counts
     const [counts] = await pool.query(
@@ -84,6 +88,7 @@ router.get('/:id', authenticate, requireAdmin, async (req, res) => {
     if (users.length === 0) {
       return res.status(404).json({ error: 'User not found' });
     }
+    rewriteProfilePic(users[0]);
 
     // Get user's registrations
     const [registrations] = await pool.query(
@@ -137,7 +142,7 @@ router.put('/profile', authenticate, async (req, res) => {
       [req.user.id]
     );
 
-    res.json({ message: 'Profile updated', user: updated[0] });
+    res.json({ message: 'Profile updated', user: rewriteProfilePic(updated[0]) });
   } catch (err) {
     console.error('Update profile error:', err);
     res.status(500).json({ error: 'Server error' });
@@ -174,6 +179,30 @@ router.put('/change-password', authenticate, async (req, res) => {
   }
 });
 
+// ==================== SERVE PROFILE PICTURE FROM DB ====================
+router.get('/profile-picture/:id', async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT profile_picture FROM users WHERE id = ?', [req.params.id]);
+    if (rows.length === 0 || !rows[0].profile_picture) {
+      return res.status(404).json({ error: 'No picture found' });
+    }
+    const dataUri = rows[0].profile_picture;
+    const matches = dataUri.match(/^data:(.+);base64,(.+)$/);
+    if (!matches) {
+      // Legacy file path — redirect to it
+      return res.redirect(rows[0].profile_picture);
+    }
+    const mimeType = matches[1];
+    const buffer = Buffer.from(matches[2], 'base64');
+    res.set('Content-Type', mimeType);
+    res.set('Cache-Control', 'public, max-age=86400');
+    res.send(buffer);
+  } catch (err) {
+    console.error('Serve profile picture error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // ==================== UPLOAD PROFILE PICTURE (Self) ====================
 router.post('/profile-picture', authenticate, upload.single('profile_picture'), async (req, res) => {
   try {
@@ -181,22 +210,18 @@ router.post('/profile-picture', authenticate, upload.single('profile_picture'), 
       return res.status(400).json({ error: 'No image file provided' });
     }
 
-    // Delete old picture if exists
-    const [current] = await pool.query('SELECT profile_picture FROM users WHERE id = ?', [req.user.id]);
-    if (current[0] && current[0].profile_picture) {
-      const oldPath = path.join(__dirname, '..', current[0].profile_picture);
-      if (fs.existsSync(oldPath)) {
-        fs.unlinkSync(oldPath);
-      }
-    }
-
-    const picturePath = '/uploads/avatars/' + req.file.filename;
-    await pool.query('UPDATE users SET profile_picture = ? WHERE id = ?', [picturePath, req.user.id]);
+    const dataUri = fileToDataUri(req.file);
+    await pool.query('UPDATE users SET profile_picture = ? WHERE id = ?', [dataUri, req.user.id]);
 
     const [updated] = await pool.query(
       'SELECT id, first_name, last_name, email, phone, role, status, avatar, profile_picture FROM users WHERE id = ?',
       [req.user.id]
     );
+
+    // Return the serving URL instead of the raw data URI
+    if (updated[0].profile_picture && updated[0].profile_picture.startsWith('data:')) {
+      updated[0].profile_picture = '/api/users/profile-picture/' + req.user.id;
+    }
 
     res.json({ message: 'Profile picture updated', user: updated[0] });
   } catch (err) {
@@ -208,14 +233,6 @@ router.post('/profile-picture', authenticate, upload.single('profile_picture'), 
 // ==================== DELETE PROFILE PICTURE (Self) ====================
 router.delete('/profile-picture', authenticate, async (req, res) => {
   try {
-    const [current] = await pool.query('SELECT profile_picture FROM users WHERE id = ?', [req.user.id]);
-    if (current[0] && current[0].profile_picture) {
-      const oldPath = path.join(__dirname, '..', current[0].profile_picture);
-      if (fs.existsSync(oldPath)) {
-        fs.unlinkSync(oldPath);
-      }
-    }
-
     await pool.query('UPDATE users SET profile_picture = NULL WHERE id = ?', [req.user.id]);
 
     const [updated] = await pool.query(
