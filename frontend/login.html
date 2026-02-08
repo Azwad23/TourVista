@@ -102,9 +102,6 @@
             <button onclick="demoLogin('participant')" class="btn btn-sm btn-outline" style="flex:1;font-size:0.75rem;">
               <i class="fas fa-user"></i> User Demo
             </button>
-            <button onclick="demoLogin('admin')" class="btn btn-sm btn-secondary" style="flex:1;font-size:0.75rem;">
-              <i class="fas fa-user-shield"></i> Admin Demo
-            </button>
           </div>
         </div>
       </div>
@@ -153,8 +150,8 @@
     }
 
     async function demoLogin(role) {
-      var email = role === 'admin' ? 'admin@tourvista.com' : 'sarah@example.com';
-      var password = role === 'admin' ? 'admin123' : 'pass123';
+      var email = 'user@tourvista.com';
+      var password = 'user123';
       try {
         var data = await AuthAPI.login(email, password);
         if (data && data.user) {
