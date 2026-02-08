@@ -20,7 +20,7 @@ router.post('/message', async (req, res) => {
 
     // Find or create conversation
     let [convos] = await pool.query(
-      'SELECT id FROM chatbot_conversations WHERE session_id = ? AND status = "active"',
+      `SELECT id FROM chatbot_conversations WHERE session_id = ? AND status = 'active'`,
       [sessionId]
     );
 
@@ -37,7 +37,7 @@ router.post('/message', async (req, res) => {
 
     // Save user message to DB
     await pool.query(
-      'INSERT INTO chatbot_messages (conversation_id, sender, message) VALUES (?, "user", ?)',
+      `INSERT INTO chatbot_messages (conversation_id, sender, message) VALUES (?, 'user', ?)`,
       [conversationId, message]
     );
 
@@ -57,7 +57,7 @@ router.post('/message', async (req, res) => {
 
     // Save bot response to DB
     await pool.query(
-      'INSERT INTO chatbot_messages (conversation_id, sender, message) VALUES (?, "bot", ?)',
+      `INSERT INTO chatbot_messages (conversation_id, sender, message) VALUES (?, 'bot', ?)`,
       [conversationId, botResponse]
     );
 
