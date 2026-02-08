@@ -55,7 +55,7 @@ router.get('/', async (req, res) => {
   try {
     const { category, status, search, sort } = req.query;
 
-    let query = 'SELECT id, title, description, category, status, start_date, end_date, cost, participant_limit, destination, meeting_point, difficulty, gradient, icon, image_url, merchant_bkash, merchant_nagad, payment_instructions, created_by, created_at, CASE WHEN image_data IS NOT NULL THEN 1 ELSE 0 END as has_image FROM events WHERE 1=1';
+    let query = `SELECT e.id, e.title, e.description, e.category, e.status, e.start_date, e.end_date, e.cost, e.participant_limit, e.destination, e.meeting_point, e.difficulty, e.gradient, e.icon, e.image_url, e.merchant_bkash, e.merchant_nagad, e.payment_instructions, e.created_by, e.created_at, CASE WHEN e.image_data IS NOT NULL THEN 1 ELSE 0 END as has_image, COALESCE((SELECT COUNT(*) FROM registrations r WHERE r.event_id = e.id AND r.status IN ('approved','pending')), 0) as current_participants FROM events e WHERE 1=1`;
     const params = [];
 
     if (category && category !== 'all') {
@@ -142,6 +142,7 @@ router.get('/:id', async (req, res) => {
       [req.params.id]
     );
     event.registered_count = regCount[0].count;
+    event.current_participants = regCount[0].count;
 
     res.json({ event });
   } catch (err) {

@@ -200,7 +200,7 @@
                 <p class="event-desc">${event.description ? event.description.substring(0, 100) + '...' : ''}</p>
                 <div class="event-card-footer">
                   <span class="price">${formatCurrency(event.cost)}</span>
-                  <span class="spots">${event.participant_limit - event.current_participants} spots left</span>
+                  <span class="spots">${(event.participant_limit || 0) - (event.current_participants || 0)} spots left</span>
                 </div>
               </div>
             </a>

@@ -216,7 +216,7 @@ async function renderEventCards(containerId, events, limit) {
           </div>
           <div class="event-meta-item">
             <i class="fas fa-users"></i>
-            <span>${event.current_participants || event.registered || 0}/${event.participant_limit || event.participantLimit} spots filled</span>
+            <span>${event.current_participants || 0}/${event.participant_limit || 0} spots filled</span>
           </div>
         </div>
       </div>
