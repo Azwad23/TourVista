@@ -8,22 +8,9 @@ const { authenticate, requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
-// ==================== MULTER SETUP (Event Images) ====================
-const eventUploadDir = path.join(__dirname, '..', 'uploads', 'events');
-if (!fs.existsSync(eventUploadDir)) {
-  fs.mkdirSync(eventUploadDir, { recursive: true });
-}
-
-const eventStorage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, eventUploadDir),
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, `event-${Date.now()}${ext}`);
-  }
-});
-
+// ==================== MULTER SETUP (Event Images — memory storage for DB) ====================
 const eventUpload = multer({
-  storage: eventStorage,
+  storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
   fileFilter: (req, file, cb) => {
     const allowed = /jpeg|jpg|png|gif|webp/;
@@ -34,12 +21,41 @@ const eventUpload = multer({
   }
 });
 
+// Helper: convert uploaded file buffer to data URI
+function fileToDataUri(file) {
+  const base64 = file.buffer.toString('base64');
+  return `data:${file.mimetype};base64,${base64}`;
+}
+
+// ==================== SERVE EVENT IMAGE FROM DB ====================
+router.get('/:id/image-data', async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT image_data FROM events WHERE id = ?', [req.params.id]);
+    if (rows.length === 0 || !rows[0].image_data) {
+      return res.status(404).json({ error: 'No image found' });
+    }
+    const dataUri = rows[0].image_data;
+    const matches = dataUri.match(/^data:(.+);base64,(.+)$/);
+    if (!matches) {
+      return res.status(500).json({ error: 'Invalid image data' });
+    }
+    const mimeType = matches[1];
+    const buffer = Buffer.from(matches[2], 'base64');
+    res.set('Content-Type', mimeType);
+    res.set('Cache-Control', 'public, max-age=86400');
+    res.send(buffer);
+  } catch (err) {
+    console.error('Serve event image error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // ==================== GET ALL EVENTS (Public) ====================
 router.get('/', async (req, res) => {
   try {
     const { category, status, search, sort } = req.query;
 
-    let query = 'SELECT * FROM events WHERE 1=1';
+    let query = 'SELECT id, title, description, category, status, start_date, end_date, cost, participant_limit, destination, meeting_point, difficulty, gradient, icon, image_url, merchant_bkash, merchant_nagad, payment_instructions, created_by, created_at, CASE WHEN image_data IS NOT NULL THEN 1 ELSE 0 END as has_image FROM events WHERE 1=1';
     const params = [];
 
     if (category && category !== 'all') {
@@ -80,6 +96,15 @@ router.get('/', async (req, res) => {
     }
 
     const [events] = await pool.query(query, params);
+
+    // Rewrite image_url for events with DB-stored images
+    events.forEach(e => {
+      if (e.has_image) {
+        e.image_url = '/api/events/' + e.id + '/image-data';
+      }
+      delete e.has_image;
+    });
+
     res.json({ events });
   } catch (err) {
     console.error('Get events error:', err);
@@ -90,12 +115,19 @@ router.get('/', async (req, res) => {
 // ==================== GET SINGLE EVENT (Public) ====================
 router.get('/:id', async (req, res) => {
   try {
-    const [events] = await pool.query('SELECT * FROM events WHERE id = ?', [req.params.id]);
+    const [events] = await pool.query(
+      'SELECT id, title, description, category, status, start_date, end_date, cost, participant_limit, destination, meeting_point, difficulty, gradient, icon, image_url, merchant_bkash, merchant_nagad, payment_instructions, created_by, created_at, CASE WHEN image_data IS NOT NULL THEN 1 ELSE 0 END as has_image FROM events WHERE id = ?',
+      [req.params.id]
+    );
     if (events.length === 0) {
       return res.status(404).json({ error: 'Event not found' });
     }
 
     const event = events[0];
+    if (event.has_image) {
+      event.image_url = '/api/events/' + event.id + '/image-data';
+    }
+    delete event.has_image;
 
     // Get itinerary
     const [itinerary] = await pool.query(
@@ -132,19 +164,21 @@ router.post('/', authenticate, requireAdmin, eventUpload.single('image'), async 
       return res.status(400).json({ error: 'Missing required fields: title, category, start_date, end_date, cost, participant_limit' });
     }
 
-    // If a file was uploaded, use its path; otherwise check for image_url in body
+    // If a file was uploaded, convert to base64 and store in DB
     let imageUrl = req.body.image_url || null;
+    let imageData = null;
     if (req.file) {
-      imageUrl = '/uploads/events/' + req.file.filename;
+      imageData = fileToDataUri(req.file);
+      imageUrl = null; // will be computed on read
     }
 
     const [result] = await pool.query(
-      `INSERT INTO events (title, description, category, status, start_date, end_date, cost, participant_limit, destination, meeting_point, difficulty, gradient, icon, image_url, merchant_bkash, merchant_nagad, payment_instructions, created_by)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO events (title, description, category, status, start_date, end_date, cost, participant_limit, destination, meeting_point, difficulty, gradient, icon, image_url, image_data, merchant_bkash, merchant_nagad, payment_instructions, created_by)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [title, description || null, category, status || 'open', start_date, end_date,
        cost, participant_limit, destination || null, meeting_point || null,
        difficulty || 'moderate', gradient || 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-       icon || 'fas fa-map-marked-alt', imageUrl,
+       icon || 'fas fa-map-marked-alt', imageUrl, imageData,
        merchant_bkash || null, merchant_nagad || null, payment_instructions || null,
        req.user.id]
     );
@@ -163,7 +197,14 @@ router.post('/', authenticate, requireAdmin, eventUpload.single('image'), async 
       }
     }
 
-    const [newEvent] = await pool.query('SELECT * FROM events WHERE id = ?', [result.insertId]);
+    const [newEvent] = await pool.query(
+      'SELECT id, title, description, category, status, start_date, end_date, cost, participant_limit, destination, meeting_point, difficulty, gradient, icon, image_url, merchant_bkash, merchant_nagad, payment_instructions, created_by, created_at, CASE WHEN image_data IS NOT NULL THEN 1 ELSE 0 END as has_image FROM events WHERE id = ?',
+      [result.insertId]
+    );
+    if (newEvent[0].has_image) {
+      newEvent[0].image_url = '/api/events/' + newEvent[0].id + '/image-data';
+    }
+    delete newEvent[0].has_image;
 
     res.status(201).json({ message: 'Event created', event: newEvent[0] });
   } catch (err) {
@@ -186,37 +227,37 @@ router.put('/:id', authenticate, requireAdmin, eventUpload.single('image'), asyn
       gradient, icon, merchant_bkash, merchant_nagad, payment_instructions
     } = req.body;
 
-    // Handle image: new upload, keep existing, or remove
+    // Handle image: new upload stores base64 in DB
     let imageUrl = existing[0].image_url; // keep existing by default
+    let imageData = undefined; // undefined = don't update
     if (req.file) {
-      // New file uploaded — delete old one if it was a local upload
-      if (existing[0].image_url && existing[0].image_url.startsWith('/uploads/')) {
-        const oldPath = path.join(__dirname, '..', existing[0].image_url);
-        if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
-      }
-      imageUrl = '/uploads/events/' + req.file.filename;
+      // New file uploaded — store as base64 in DB
+      imageData = fileToDataUri(req.file);
+      imageUrl = null;
     } else if (req.body.remove_image === 'true') {
       // Explicitly remove image
-      if (existing[0].image_url && existing[0].image_url.startsWith('/uploads/')) {
-        const oldPath = path.join(__dirname, '..', existing[0].image_url);
-        if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
-      }
       imageUrl = null;
+      imageData = null;
     } else if (req.body.image_url !== undefined) {
       imageUrl = req.body.image_url || null;
     }
 
-    await pool.query(
-      `UPDATE events SET title=?, description=?, category=?, status=?, start_date=?, end_date=?,
+    let updateQuery = `UPDATE events SET title=?, description=?, category=?, status=?, start_date=?, end_date=?,
        cost=?, participant_limit=?, destination=?, meeting_point=?, difficulty=?, gradient=?, icon=?, image_url=?,
-       merchant_bkash=?, merchant_nagad=?, payment_instructions=?
-       WHERE id=?`,
-      [title, description, category, status, start_date, end_date,
+       merchant_bkash=?, merchant_nagad=?, payment_instructions=?`;
+    let updateParams = [title, description, category, status, start_date, end_date,
        cost, participant_limit, destination, meeting_point, difficulty,
        gradient, icon, imageUrl,
-       merchant_bkash || null, merchant_nagad || null, payment_instructions || null,
-       req.params.id]
-    );
+       merchant_bkash || null, merchant_nagad || null, payment_instructions || null];
+
+    if (imageData !== undefined) {
+      updateQuery += ', image_data=?';
+      updateParams.push(imageData);
+    }
+    updateQuery += ' WHERE id=?';
+    updateParams.push(req.params.id);
+
+    await pool.query(updateQuery, updateParams);
 
     // Update itinerary if provided
     let itinerary = req.body.itinerary;
@@ -233,7 +274,14 @@ router.put('/:id', authenticate, requireAdmin, eventUpload.single('image'), asyn
       }
     }
 
-    const [updated] = await pool.query('SELECT * FROM events WHERE id = ?', [req.params.id]);
+    const [updated] = await pool.query(
+      'SELECT id, title, description, category, status, start_date, end_date, cost, participant_limit, destination, meeting_point, difficulty, gradient, icon, image_url, merchant_bkash, merchant_nagad, payment_instructions, created_by, created_at, CASE WHEN image_data IS NOT NULL THEN 1 ELSE 0 END as has_image FROM events WHERE id = ?',
+      [req.params.id]
+    );
+    if (updated[0].has_image) {
+      updated[0].image_url = '/api/events/' + updated[0].id + '/image-data';
+    }
+    delete updated[0].has_image;
     res.json({ message: 'Event updated', event: updated[0] });
   } catch (err) {
     console.error('Update event error:', err);
@@ -253,15 +301,10 @@ router.post('/:id/image', authenticate, requireAdmin, eventUpload.single('image'
       return res.status(404).json({ error: 'Event not found' });
     }
 
-    // Delete old image if local
-    if (existing[0].image_url && existing[0].image_url.startsWith('/uploads/')) {
-      const oldPath = path.join(__dirname, '..', existing[0].image_url);
-      if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
-    }
+    const imageData = fileToDataUri(req.file);
+    await pool.query('UPDATE events SET image_data = ?, image_url = NULL WHERE id = ?', [imageData, req.params.id]);
 
-    const imageUrl = '/uploads/events/' + req.file.filename;
-    await pool.query('UPDATE events SET image_url = ? WHERE id = ?', [imageUrl, req.params.id]);
-
+    const imageUrl = '/api/events/' + req.params.id + '/image-data';
     res.json({ message: 'Event image uploaded', image_url: imageUrl });
   } catch (err) {
     console.error('Upload event image error:', err);
@@ -272,17 +315,12 @@ router.post('/:id/image', authenticate, requireAdmin, eventUpload.single('image'
 // ==================== DELETE EVENT IMAGE (Admin) ====================
 router.delete('/:id/image', authenticate, requireAdmin, async (req, res) => {
   try {
-    const [existing] = await pool.query('SELECT * FROM events WHERE id = ?', [req.params.id]);
+    const [existing] = await pool.query('SELECT id FROM events WHERE id = ?', [req.params.id]);
     if (existing.length === 0) {
       return res.status(404).json({ error: 'Event not found' });
     }
 
-    if (existing[0].image_url && existing[0].image_url.startsWith('/uploads/')) {
-      const oldPath = path.join(__dirname, '..', existing[0].image_url);
-      if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
-    }
-
-    await pool.query('UPDATE events SET image_url = NULL WHERE id = ?', [req.params.id]);
+    await pool.query('UPDATE events SET image_url = NULL, image_data = NULL WHERE id = ?', [req.params.id]);
     res.json({ message: 'Event image removed' });
   } catch (err) {
     console.error('Delete event image error:', err);
