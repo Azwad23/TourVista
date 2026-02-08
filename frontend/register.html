@@ -176,8 +176,8 @@
       const last_name = inputs[1].value.trim();
       const email = inputs[2].value.trim();
       const phone = document.getElementById('regPhone').value.trim();
-      const password = inputs[3].value;
-      const confirm = inputs[4].value;
+      const password = inputs[4].value;
+      const confirm = inputs[5].value;
 
       if (phone && !/^\+880\d{10}$/.test(phone)) {
         showToast('Phone must start with +880 followed by 10 digits', 'error');
