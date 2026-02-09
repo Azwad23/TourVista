@@ -10,37 +10,37 @@ require('dotenv').config();
 
 const router = express.Router();
 
-// SendGrid API for email delivery (works on Render free tier)
-async function sendEmailViaSendGrid(to, subject, html) {
-  if (!process.env.SENDGRID_API_KEY) {
-    console.log('⚠️ SENDGRID_API_KEY not configured');
+// Brevo (Sendinblue) API for email delivery - works on Render, 300 emails/day free
+async function sendEmailViaBrevo(to, subject, html) {
+  if (!process.env.BREVO_API_KEY) {
+    console.log('⚠️ BREVO_API_KEY not configured');
     return false;
   }
   try {
-    console.log('📧 Attempting to send email via SendGrid API...');
-    const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
+    console.log('📧 Attempting to send email via Brevo API...');
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${process.env.SENDGRID_API_KEY}`,
+        'api-key': process.env.BREVO_API_KEY,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        personalizations: [{ to: [{ email: to }] }],
-        from: { email: process.env.SENDGRID_FROM_EMAIL || 'noreply@tourvista.com', name: 'TourVista' },
+        sender: { email: process.env.BREVO_FROM_EMAIL || 'noreply@tourvista.com', name: 'TourVista' },
+        to: [{ email: to }],
         subject,
-        content: [{ type: 'text/html', value: html }]
+        htmlContent: html
       })
     });
-    if (response.ok || response.status === 202) {
-      console.log('✅ Email sent successfully via SendGrid');
+    if (response.ok || response.status === 201) {
+      console.log('✅ Email sent successfully via Brevo');
       return true;
     } else {
       const error = await response.text();
-      console.error('❌ SendGrid API failed:', response.status, error);
+      console.error('❌ Brevo API failed:', response.status, error);
       return false;
     }
   } catch (err) {
-    console.error('❌ SendGrid API error:', err.message);
+    console.error('❌ Brevo API error:', err.message);
     return false;
   }
 }
@@ -274,23 +274,15 @@ router.post('/forgot-password', [
     `;
 
     try {
-      // Try SendGrid API first (works on Render free tier)
-      const sendgridSuccess = await sendEmailViaSendGrid(email, 'TourVista — Password Reset OTP', emailHtml);
-      if (sendgridSuccess) {
-        console.log(`OTP sent via SendGrid to ${email}: ${otp}`);
+      // Try Brevo API first (works on Render, 300 emails/day free)
+      const brevoSuccess = await sendEmailViaBrevo(email, 'TourVista — Password Reset OTP', emailHtml);
+      if (brevoSuccess) {
+        console.log(`OTP sent via Brevo to ${email}: ${otp}`);
       } else {
-        // Fallback to SMTP
-        await transporter.sendMail({
-          from: process.env.SMTP_FROM || process.env.SMTP_USER,
-          to: email,
-          subject: 'TourVista — Password Reset OTP',
-          html: emailHtml
-        });
-        console.log(`OTP sent via SMTP to ${email}: ${otp}`);
+        console.log(`[FALLBACK] OTP for ${email}: ${otp}`);
       }
     } catch (emailErr) {
       console.error('Email send error:', emailErr.message);
-      // Still return success — log the OTP for debugging
       console.log(`[FALLBACK] OTP for ${email}: ${otp}`);
     }
 
