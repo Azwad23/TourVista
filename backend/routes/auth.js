@@ -10,41 +10,6 @@ require('dotenv').config();
 
 const router = express.Router();
 
-// Brevo (Sendinblue) API for email delivery - works on Render, 300 emails/day free
-async function sendEmailViaBrevo(to, subject, html) {
-  if (!process.env.BREVO_API_KEY) {
-    console.log('⚠️ BREVO_API_KEY not configured');
-    return false;
-  }
-  try {
-    console.log('📧 Attempting to send email via Brevo API...');
-    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
-      method: 'POST',
-      headers: {
-        'api-key': process.env.BREVO_API_KEY,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        sender: { email: process.env.BREVO_FROM_EMAIL || 'noreply@tourvista.com', name: 'TourVista' },
-        to: [{ email: to }],
-        subject,
-        htmlContent: html
-      })
-    });
-    if (response.ok || response.status === 201) {
-      console.log('✅ Email sent successfully via Brevo');
-      return true;
-    } else {
-      const error = await response.text();
-      console.error('❌ Brevo API failed:', response.status, error);
-      return false;
-    }
-  } catch (err) {
-    console.error('❌ Brevo API error:', err.message);
-    return false;
-  }
-}
-
 // ==================== EMAIL TRANSPORTER ====================
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.gmail.com',
@@ -274,13 +239,13 @@ router.post('/forgot-password', [
     `;
 
     try {
-      // Try Brevo API first (works on Render, 300 emails/day free)
-      const brevoSuccess = await sendEmailViaBrevo(email, 'TourVista — Password Reset OTP', emailHtml);
-      if (brevoSuccess) {
-        console.log(`OTP sent via Brevo to ${email}: ${otp}`);
-      } else {
-        console.log(`[FALLBACK] OTP for ${email}: ${otp}`);
-      }
+      await transporter.sendMail({
+        from: process.env.SMTP_FROM || process.env.SMTP_USER,
+        to: email,
+        subject: 'TourVista — Password Reset OTP',
+        html: emailHtml
+      });
+      console.log(`OTP sent to ${email}: ${otp}`);
     } catch (emailErr) {
       console.error('Email send error:', emailErr.message);
       console.log(`[FALLBACK] OTP for ${email}: ${otp}`);
