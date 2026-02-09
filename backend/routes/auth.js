@@ -10,6 +10,30 @@ require('dotenv').config();
 
 const router = express.Router();
 
+// Resend API fallback for when SMTP is blocked (Render free tier)
+async function sendEmailViaResend(to, subject, html) {
+  if (!process.env.RESEND_API_KEY) return false;
+  try {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        from: 'TourVista <onboarding@resend.dev>',
+        to: [to],
+        subject,
+        html
+      })
+    });
+    return response.ok;
+  } catch (err) {
+    console.error('Resend API error:', err.message);
+    return false;
+  }
+}
+
 // ==================== EMAIL TRANSPORTER ====================
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.gmail.com',
@@ -210,40 +234,49 @@ router.post('/forgot-password', [
     );
 
     // Send OTP email
-    try {
-      await transporter.sendMail({
-        from: process.env.SMTP_FROM || process.env.SMTP_USER,
-        to: email,
-        subject: 'TourVista — Password Reset OTP',
-        html: `
-          <div style="font-family:'Inter',Arial,sans-serif;max-width:480px;margin:0 auto;padding:32px;background:#ffffff;border-radius:16px;border:1px solid #e5e7eb;">
-            <div style="text-align:center;margin-bottom:24px;">
-              <div style="display:inline-flex;align-items:center;gap:8px;font-size:1.5rem;font-weight:800;color:#4f46e5;">
-                🌍 TourVista
-              </div>
-            </div>
-            <h2 style="margin:0 0 8px;font-size:1.25rem;color:#111827;">Password Reset</h2>
-            <p style="color:#6b7280;font-size:0.95rem;line-height:1.6;">
-              Hi ${user.first_name},<br>
-              You requested to reset your password. Use the OTP below to verify your identity:
-            </p>
-            <div style="text-align:center;margin:24px 0;">
-              <div style="display:inline-block;padding:16px 32px;background:linear-gradient(135deg,#4f46e5,#7c3aed);border-radius:12px;letter-spacing:8px;font-size:2rem;font-weight:800;color:#ffffff;">
-                ${otp}
-              </div>
-            </div>
-            <p style="color:#6b7280;font-size:0.85rem;text-align:center;">
-              This OTP is valid for <strong>10 minutes</strong>. Do not share it with anyone.
-            </p>
-            <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;">
-            <p style="color:#9ca3af;font-size:0.75rem;text-align:center;">
-              If you didn't request this, you can safely ignore this email.<br>
-              &copy; TourVista — Group Tour Platform
-            </p>
+    const emailHtml = `
+      <div style="font-family:'Inter',Arial,sans-serif;max-width:480px;margin:0 auto;padding:32px;background:#ffffff;border-radius:16px;border:1px solid #e5e7eb;">
+        <div style="text-align:center;margin-bottom:24px;">
+          <div style="display:inline-flex;align-items:center;gap:8px;font-size:1.5rem;font-weight:800;color:#4f46e5;">
+            🌍 TourVista
           </div>
-        `
-      });
-      console.log(`OTP sent to ${email}: ${otp}`);
+        </div>
+        <h2 style="margin:0 0 8px;font-size:1.25rem;color:#111827;">Password Reset</h2>
+        <p style="color:#6b7280;font-size:0.95rem;line-height:1.6;">
+          Hi ${user.first_name},<br>
+          You requested to reset your password. Use the OTP below to verify your identity:
+        </p>
+        <div style="text-align:center;margin:24px 0;">
+          <div style="display:inline-block;padding:16px 32px;background:linear-gradient(135deg,#4f46e5,#7c3aed);border-radius:12px;letter-spacing:8px;font-size:2rem;font-weight:800;color:#ffffff;">
+            ${otp}
+          </div>
+        </div>
+        <p style="color:#6b7280;font-size:0.85rem;text-align:center;">
+          This OTP is valid for <strong>10 minutes</strong>. Do not share it with anyone.
+        </p>
+        <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0;">
+        <p style="color:#9ca3af;font-size:0.75rem;text-align:center;">
+          If you didn't request this, you can safely ignore this email.<br>
+          &copy; TourVista — Group Tour Platform
+        </p>
+      </div>
+    `;
+
+    try {
+      // Try Resend API first (works on Render free tier)
+      const resendSuccess = await sendEmailViaResend(email, 'TourVista — Password Reset OTP', emailHtml);
+      if (resendSuccess) {
+        console.log(`OTP sent via Resend to ${email}: ${otp}`);
+      } else {
+        // Fallback to SMTP
+        await transporter.sendMail({
+          from: process.env.SMTP_FROM || process.env.SMTP_USER,
+          to: email,
+          subject: 'TourVista — Password Reset OTP',
+          html: emailHtml
+        });
+        console.log(`OTP sent via SMTP to ${email}: ${otp}`);
+      }
     } catch (emailErr) {
       console.error('Email send error:', emailErr.message);
       // Still return success — log the OTP for debugging
