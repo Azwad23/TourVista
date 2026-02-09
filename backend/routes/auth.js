@@ -10,37 +10,37 @@ require('dotenv').config();
 
 const router = express.Router();
 
-// Resend API fallback for when SMTP is blocked (Render free tier)
-async function sendEmailViaResend(to, subject, html) {
-  if (!process.env.RESEND_API_KEY) {
-    console.log('⚠️ RESEND_API_KEY not configured');
+// SendGrid API for email delivery (works on Render free tier)
+async function sendEmailViaSendGrid(to, subject, html) {
+  if (!process.env.SENDGRID_API_KEY) {
+    console.log('⚠️ SENDGRID_API_KEY not configured');
     return false;
   }
   try {
-    console.log('📧 Attempting to send email via Resend API...');
-    const response = await fetch('https://api.resend.com/emails', {
+    console.log('📧 Attempting to send email via SendGrid API...');
+    const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+        'Authorization': `Bearer ${process.env.SENDGRID_API_KEY}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        from: 'TourVista <onboarding@resend.dev>',
-        to: [to],
+        personalizations: [{ to: [{ email: to }] }],
+        from: { email: process.env.SENDGRID_FROM_EMAIL || 'noreply@tourvista.com', name: 'TourVista' },
         subject,
-        html
+        content: [{ type: 'text/html', value: html }]
       })
     });
-    if (response.ok) {
-      console.log('✅ Email sent successfully via Resend');
+    if (response.ok || response.status === 202) {
+      console.log('✅ Email sent successfully via SendGrid');
       return true;
     } else {
       const error = await response.text();
-      console.error('❌ Resend API failed:', response.status, error);
+      console.error('❌ SendGrid API failed:', response.status, error);
       return false;
     }
   } catch (err) {
-    console.error('❌ Resend API error:', err.message);
+    console.error('❌ SendGrid API error:', err.message);
     return false;
   }
 }
@@ -274,10 +274,10 @@ router.post('/forgot-password', [
     `;
 
     try {
-      // Try Resend API first (works on Render free tier)
-      const resendSuccess = await sendEmailViaResend(email, 'TourVista — Password Reset OTP', emailHtml);
-      if (resendSuccess) {
-        console.log(`OTP sent via Resend to ${email}: ${otp}`);
+      // Try SendGrid API first (works on Render free tier)
+      const sendgridSuccess = await sendEmailViaSendGrid(email, 'TourVista — Password Reset OTP', emailHtml);
+      if (sendgridSuccess) {
+        console.log(`OTP sent via SendGrid to ${email}: ${otp}`);
       } else {
         // Fallback to SMTP
         await transporter.sendMail({
