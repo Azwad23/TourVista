@@ -12,8 +12,12 @@ const router = express.Router();
 
 // Resend API fallback for when SMTP is blocked (Render free tier)
 async function sendEmailViaResend(to, subject, html) {
-  if (!process.env.RESEND_API_KEY) return false;
+  if (!process.env.RESEND_API_KEY) {
+    console.log('⚠️ RESEND_API_KEY not configured');
+    return false;
+  }
   try {
+    console.log('📧 Attempting to send email via Resend API...');
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -27,9 +31,16 @@ async function sendEmailViaResend(to, subject, html) {
         html
       })
     });
-    return response.ok;
+    if (response.ok) {
+      console.log('✅ Email sent successfully via Resend');
+      return true;
+    } else {
+      const error = await response.text();
+      console.error('❌ Resend API failed:', response.status, error);
+      return false;
+    }
   } catch (err) {
-    console.error('Resend API error:', err.message);
+    console.error('❌ Resend API error:', err.message);
     return false;
   }
 }
