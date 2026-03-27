@@ -10,6 +10,42 @@ require('dotenv').config();
 
 const router = express.Router();
 
+let passwordResetTableInitPromise = null;
+
+// Ensure forgot-password storage exists even on older databases.
+function ensurePasswordResetsTable() {
+  if (!passwordResetTableInitPromise) {
+    passwordResetTableInitPromise = (async () => {
+      // Create table if not exists
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS password_resets (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          email VARCHAR(255) NOT NULL,
+          otp VARCHAR(255) NOT NULL,
+          expires_at DATETIME NOT NULL,
+          used TINYINT(1) NOT NULL DEFAULT 0,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          INDEX idx_password_resets_email (email),
+          INDEX idx_password_resets_expires_at (expires_at)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+      `);
+      // Ensure otp column is large enough for reset tokens (fix for older DBs)
+      await pool.query(`ALTER TABLE password_resets MODIFY COLUMN otp VARCHAR(255) NOT NULL`).catch(() => {});
+    })().catch((err) => {
+      // Allow retries if initialization fails temporarily.
+      passwordResetTableInitPromise = null;
+      throw err;
+    });
+  }
+
+  return passwordResetTableInitPromise;
+}
+
+// Kick off initialization early to reduce first-request latency.
+ensurePasswordResetsTable().catch((err) => {
+  console.error('Failed to initialize password_resets table:', err.message);
+});
+
 // ==================== EMAIL TRANSPORTER ====================
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.gmail.com',
@@ -20,6 +56,67 @@ const transporter = nodemailer.createTransport({
     pass: process.env.SMTP_PASS
   }
 });
+
+// Send email via Brevo HTTP API (works on Render where SMTP is blocked)
+async function sendEmailViaBrevo(to, subject, htmlContent) {
+  const apiKey = process.env.BREVO_API_KEY;
+  if (!apiKey) return false;
+
+  const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: {
+      'accept': 'application/json',
+      'api-key': apiKey,
+      'content-type': 'application/json'
+    },
+    body: JSON.stringify({
+      sender: { name: 'TourVista', email: process.env.SMTP_USER || 'noreply@tourvista.com' },
+      to: [{ email: to }],
+      subject: subject,
+      htmlContent: htmlContent
+    })
+  });
+
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error(`Brevo API error: ${err}`);
+  }
+  return true;
+}
+
+// Send email with fallback: Brevo API -> SMTP -> Console log
+async function sendEmail(to, subject, htmlContent) {
+  // Try Brevo API first (works on Render)
+  const brevoKey = process.env.BREVO_API_KEY;
+  console.log(`[Email] BREVO_API_KEY present: ${!!brevoKey}, length: ${brevoKey ? brevoKey.length : 0}`);
+  
+  if (brevoKey) {
+    try {
+      await sendEmailViaBrevo(to, subject, htmlContent);
+      console.log(`Email sent via Brevo to ${to}`);
+      return true;
+    } catch (err) {
+      console.error('Brevo API error:', err.message);
+    }
+  } else {
+    console.log('[Email] No BREVO_API_KEY found, skipping Brevo');
+  }
+
+  // Fallback to SMTP (works locally)
+  try {
+    await transporter.sendMail({
+      from: process.env.SMTP_FROM || process.env.SMTP_USER,
+      to: to,
+      subject: subject,
+      html: htmlContent
+    });
+    console.log(`Email sent via SMTP to ${to}`);
+    return true;
+  } catch (err) {
+    console.error('SMTP error:', err.message);
+    return false;
+  }
+}
 
 // Generate 6-digit OTP
 function generateOTP() {
@@ -181,6 +278,8 @@ router.post('/forgot-password', [
   body('email').isEmail().withMessage('Valid email is required')
 ], async (req, res) => {
   try {
+    await ensurePasswordResetsTable();
+
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
@@ -239,13 +338,12 @@ router.post('/forgot-password', [
     `;
 
     try {
-      await transporter.sendMail({
-        from: process.env.SMTP_FROM || process.env.SMTP_USER,
-        to: email,
-        subject: 'TourVista — Password Reset OTP',
-        html: emailHtml
-      });
-      console.log(`OTP sent to ${email}: ${otp}`);
+      const sent = await sendEmail(email, 'TourVista — Password Reset OTP', emailHtml);
+      if (sent) {
+        console.log(`OTP sent to ${email}`);
+      } else {
+        console.log(`[FALLBACK] OTP for ${email}: ${otp}`);
+      }
     } catch (emailErr) {
       console.error('Email send error:', emailErr.message);
       console.log(`[FALLBACK] OTP for ${email}: ${otp}`);
@@ -264,6 +362,8 @@ router.post('/verify-otp', [
   body('otp').isLength({ min: 6, max: 6 }).withMessage('OTP must be 6 digits')
 ], async (req, res) => {
   try {
+    await ensurePasswordResetsTable();
+
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
@@ -311,6 +411,8 @@ router.post('/reset-password', [
   body('new_password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
 ], async (req, res) => {
   try {
+    await ensurePasswordResetsTable();
+
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
