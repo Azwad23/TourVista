@@ -537,7 +537,6 @@ async function renderUserTableSearch(query) {
 async function renderAdminChatbot() {
   try {
     const data = await ChatbotAPI.getAllConversations();
-    const conversations = data.conversations || [];
     const topQuestions = data.topQuestions || [];
     const stats = data.stats || {};
 
@@ -548,37 +547,10 @@ async function renderAdminChatbot() {
       statCards[1].textContent = stats.total_messages || 0;
     }
 
-    renderConversationList(conversations);
     renderTopQuestions(topQuestions);
   } catch (err) {
     console.error('Chatbot monitoring error:', err);
   }
-}
-
-function renderConversationList(conversations) {
-  const container = document.getElementById('conversationList');
-  if (!container) return;
-
-  if (conversations.length === 0) {
-    container.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:20px;">No conversations yet</p>';
-    return;
-  }
-
-  container.innerHTML = conversations.map(conv => `
-    <div class="conversation-card" onclick="viewConversation(${conv.id})" style="padding:12px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.2s;" onmouseover="this.style.background='var(--bg)'" onmouseout="this.style.background=''">
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <div class="user-cell">
-          <div class="avatar">${conv.avatar || (conv.first_name ? conv.first_name[0] + (conv.last_name || '')[0] : '?')}</div>
-          <div>
-            <div class="name">${conv.first_name ? conv.first_name + ' ' + conv.last_name : 'Guest'}</div>
-            <div class="email">${conv.message_count} messages</div>
-          </div>
-        </div>
-        <span style="font-size:0.8rem;color:var(--text-muted)">${formatDate(conv.started_at)}</span>
-      </div>
-      <div style="font-size:0.85rem;color:var(--text-light);margin-top:8px;padding-left:44px;">${conv.last_message ? conv.last_message.substring(0, 60) + '...' : ''}</div>
-    </div>
-  `).join('');
 }
 
 function renderTopQuestions(questions) {
@@ -603,31 +575,6 @@ function renderTopQuestions(questions) {
       </div>
     </div>
   `).join('');
-}
-
-async function viewConversation(id) {
-  try {
-    const data = await ChatbotAPI.getConversationDetail(id);
-    const messages = data.messages || [];
-
-    const detail = document.getElementById('conversationDetail');
-    if (detail) {
-      detail.innerHTML = messages.map(msg => `
-        <div style="display:flex;gap:10px;margin-bottom:16px;${msg.sender === 'user' ? 'flex-direction:row-reverse;' : ''}">
-          <div style="width:32px;height:32px;border-radius:50%;background:${msg.sender === 'bot' ? 'var(--primary)' : 'var(--success)'};display:flex;align-items:center;justify-content:center;color:white;font-size:0.75rem;flex-shrink:0;">
-            <i class="fas fa-${msg.sender === 'bot' ? 'robot' : 'user'}"></i>
-          </div>
-          <div style="background:${msg.sender === 'bot' ? 'var(--bg)' : 'var(--primary-light)'};padding:10px 14px;border-radius:12px;max-width:70%;font-size:0.9rem;">
-            ${msg.message}
-            <div style="font-size:0.7rem;color:var(--text-muted);margin-top:4px;">${formatDate(msg.sent_at)}</div>
-          </div>
-        </div>
-      `).join('');
-    }
-    openModal('conversationModal');
-  } catch (err) {
-    showToast('Failed to load conversation', 'error');
-  }
 }
 
 /* ---------- Admin Filter Helpers ---------- */
