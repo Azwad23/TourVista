@@ -537,44 +537,17 @@ async function renderUserTableSearch(query) {
 async function renderAdminChatbot() {
   try {
     const data = await ChatbotAPI.getAllConversations();
-    const topQuestions = data.topQuestions || [];
     const stats = data.stats || {};
 
-    // Update stat cards
+    // Update stat cards (only show counts)
     const statCards = document.querySelectorAll('.stat-card h3');
-    if (statCards.length >= 4) {
+    if (statCards.length >= 2) {
       statCards[0].textContent = stats.total_conversations || 0;
       statCards[1].textContent = stats.total_messages || 0;
     }
-
-    renderTopQuestions(topQuestions);
   } catch (err) {
     console.error('Chatbot monitoring error:', err);
   }
-}
-
-function renderTopQuestions(questions) {
-  const container = document.getElementById('topQuestions');
-  if (!container) return;
-
-  if (questions.length === 0) {
-    container.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:20px;">No questions recorded yet</p>';
-    return;
-  }
-
-  const maxCount = Math.max(...questions.map(q => q.count));
-
-  container.innerHTML = questions.map(q => `
-    <div style="margin-bottom:16px;">
-      <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
-        <span style="font-size:0.85rem;font-weight:500;">${q.message.substring(0, 40)}${q.message.length > 40 ? '...' : ''}</span>
-        <span style="font-size:0.8rem;color:var(--text-muted)">${q.count}</span>
-      </div>
-      <div class="progress">
-        <div class="progress-bar" style="width:${(q.count / maxCount) * 100}%;background:var(--primary);"></div>
-      </div>
-    </div>
-  `).join('');
 }
 
 /* ---------- Admin Filter Helpers ---------- */

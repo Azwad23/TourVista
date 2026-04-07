@@ -574,16 +574,13 @@ h1, h2, h3, h4, h5, h6 {
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  opacity: 0.3;
-  filter: blur(2px);
+  opacity: 1;
 }
 
 .hero-overlay {
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at 30% 50%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
-              radial-gradient(ellipse at 70% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 40%),
-              linear-gradient(180deg, rgba(10, 10, 15, 0.7) 0%, rgba(10, 10, 15, 0.9) 100%);
+  background: linear-gradient(135deg, rgba(10, 10, 15, 0.6), rgba(10, 10, 15, 0.4));
 }
 
 /* 3D Canvas Container */
@@ -861,6 +858,109 @@ h1, h2, h3, h4, h5, h6 {
   inset: 0;
   background: linear-gradient(135deg, rgba(10, 10, 15, 0.92), rgba(10, 10, 15, 0.85));
   z-index: 0;
+}
+
+/* 3D Section Effects */
+.section-3d {
+  position: relative;
+}
+
+.section-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.3;
+  animation: section-orb-float 25s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.orb-1 {
+  width: 500px;
+  height: 500px;
+  background: linear-gradient(135deg, #3b82f6, #60a5fa);
+  top: -150px;
+  right: -100px;
+  animation-delay: 0s;
+}
+
+.orb-2 {
+  width: 400px;
+  height: 400px;
+  background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+  bottom: -100px;
+  left: -150px;
+  animation-delay: -8s;
+}
+
+.orb-3 {
+  width: 300px;
+  height: 300px;
+  background: linear-gradient(135deg, #06b6d4, #22d3ee);
+  top: 40%;
+  right: 10%;
+  animation-delay: -15s;
+}
+
+.orb-4 {
+  width: 450px;
+  height: 450px;
+  background: linear-gradient(135deg, #22c55e, #4ade80);
+  top: -100px;
+  left: -100px;
+  animation-delay: -5s;
+}
+
+.orb-5 {
+  width: 350px;
+  height: 350px;
+  background: linear-gradient(135deg, #f59e0b, #fbbf24);
+  bottom: -80px;
+  right: -80px;
+  animation-delay: -12s;
+}
+
+.orb-6 {
+  width: 400px;
+  height: 400px;
+  background: linear-gradient(135deg, #ec4899, #f472b6);
+  top: -120px;
+  right: 20%;
+  animation-delay: -3s;
+}
+
+.orb-7 {
+  width: 300px;
+  height: 300px;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  bottom: -100px;
+  left: 15%;
+  animation-delay: -10s;
+}
+
+.orb-8 {
+  width: 380px;
+  height: 380px;
+  background: linear-gradient(135deg, #f97316, #fb923c);
+  top: -80px;
+  left: 5%;
+  animation-delay: -7s;
+}
+
+.orb-9 {
+  width: 320px;
+  height: 320px;
+  background: linear-gradient(135deg, #14b8a6, #2dd4bf);
+  bottom: -90px;
+  right: 10%;
+  animation-delay: -14s;
+}
+
+@keyframes section-orb-float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(40px, -40px) scale(1.1); }
+  50% { transform: translate(-30px, 30px) scale(0.9); }
+  75% { transform: translate(30px, 40px) scale(1.05); }
 }
 
 .section-title {

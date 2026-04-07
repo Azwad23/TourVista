@@ -7,7 +7,6 @@
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
 
@@ -53,17 +52,7 @@
   <!-- ========== HERO SECTION ========== -->
   <section class="hero">
     <div class="hero-bg" style="background-image: url('background.jpeg');"></div>
-    <div class="hero-overlay"></div>
-    
-    <!-- Animated Gradient Orbs -->
-    <div class="hero-orb hero-orb-1"></div>
-    <div class="hero-orb hero-orb-2"></div>
-    <div class="hero-orb hero-orb-3"></div>
-    
-    <!-- 3D Canvas Container -->
-    <div class="hero-3d-container" id="hero3d"></div>
-    
-    <div class="hero-particles" id="particles"></div>
+    <div class="hero-overlay" style="background: linear-gradient(135deg, rgba(10, 10, 15, 0.6), rgba(10, 10, 15, 0.4));"></div>
 
     <div class="hero-content">
       <div class="hero-badge">
@@ -155,8 +144,14 @@
   </section>
 
   <!-- ========== POPULAR DESTINATIONS ========== -->
-  <section class="section section-with-bg" id="destinations" style="background-image: url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=1920&q=80'); background-size: cover; background-position: center; background-attachment: fixed;">
+  <section class="section section-with-bg section-3d" id="destinations" style="background-image: url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=1920&q=80'); background-size: cover; background-position: center; background-attachment: fixed;">
     <div class="section-bg-overlay" style="background: linear-gradient(180deg, rgba(10,10,15,0.95) 0%, rgba(10,10,15,0.85) 50%, rgba(10,10,15,0.95) 100%);"></div>
+    
+    <!-- 3D Animated Orbs -->
+    <div class="section-orb orb-1"></div>
+    <div class="section-orb orb-2"></div>
+    <div class="section-orb orb-3"></div>
+    
     <div class="container" style="position:relative;z-index:1;">
       <div class="section-title fade-in-on-scroll">
         <h2>Popular Destinations</h2>
@@ -219,8 +214,13 @@
   </section>
 
   <!-- ========== FEATURES ========== -->
-  <section class="section section-with-bg" id="features" style="background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&q=80'); background-size: cover; background-position: center; background-attachment: fixed;">
+  <section class="section section-with-bg section-3d" id="features" style="background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&q=80'); background-size: cover; background-position: center; background-attachment: fixed;">
     <div class="section-bg-overlay"></div>
+    
+    <!-- 3D Animated Orbs -->
+    <div class="section-orb orb-4"></div>
+    <div class="section-orb orb-5"></div>
+    
     <div class="container" style="position:relative;z-index:1;">
       <div class="section-title fade-in-on-scroll">
         <h2>Why Choose TourVista?</h2>
@@ -310,8 +310,13 @@
   </section>
 
   <!-- ========== FEATURED EVENTS ========== -->
-  <section class="section section-with-bg" id="featured-events" style="background-image: url('https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1920&q=80'); background-size: cover; background-position: center; background-attachment: fixed;">
+  <section class="section section-with-bg section-3d" id="featured-events" style="background-image: url('https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1920&q=80'); background-size: cover; background-position: center; background-attachment: fixed;">
     <div class="section-bg-overlay"></div>
+    
+    <!-- 3D Animated Orbs -->
+    <div class="section-orb orb-8"></div>
+    <div class="section-orb orb-9"></div>
+    
     <div class="container" style="position:relative;z-index:1;">
       <div class="section-title fade-in-on-scroll">
         <h2>Featured Events</h2>
@@ -329,8 +334,13 @@
   </section>
 
   <!-- ========== TESTIMONIALS ========== -->
-  <section class="section section-with-bg" id="about" style="background-image: url('https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=1920&q=80'); background-size: cover; background-position: center; background-attachment: fixed;">
+  <section class="section section-with-bg section-3d" id="about" style="background-image: url('https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=1920&q=80'); background-size: cover; background-position: center; background-attachment: fixed;">
     <div class="section-bg-overlay" style="background: linear-gradient(135deg, rgba(10,10,15,0.9), rgba(59,130,246,0.3));"></div>
+    
+    <!-- 3D Animated Orbs -->
+    <div class="section-orb orb-6"></div>
+    <div class="section-orb orb-7"></div>
+    
     <div class="container" style="position:relative;z-index:1;">
       <div class="section-title fade-in-on-scroll">
         <h2 style="color:white;">What Travelers Say</h2>
@@ -473,124 +483,8 @@
   <script src="js/chatbot.js"></script>
 
   <script>
-    // Initialize 3D Globe
-    function init3DGlobe() {
-      const container = document.getElementById('hero3d');
-      if (!container || typeof THREE === 'undefined') return;
-
-      const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-      const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-      
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-      container.appendChild(renderer.domElement);
-
-      // Create globe wireframe
-      const globeGeometry = new THREE.SphereGeometry(5, 32, 32);
-      const globeMaterial = new THREE.MeshBasicMaterial({
-        color: 0x3b82f6,
-        wireframe: true,
-        transparent: true,
-        opacity: 0.15
-      });
-      const globe = new THREE.Mesh(globeGeometry, globeMaterial);
-      scene.add(globe);
-
-      // Create inner glow sphere
-      const glowGeometry = new THREE.SphereGeometry(4.8, 32, 32);
-      const glowMaterial = new THREE.MeshBasicMaterial({
-        color: 0x8b5cf6,
-        transparent: true,
-        opacity: 0.05
-      });
-      const glow = new THREE.Mesh(glowGeometry, glowMaterial);
-      scene.add(glow);
-
-      // Create orbiting particles
-      const particleCount = 200;
-      const particleGeometry = new THREE.BufferGeometry();
-      const positions = new Float32Array(particleCount * 3);
-      
-      for (let i = 0; i < particleCount; i++) {
-        const theta = Math.random() * Math.PI * 2;
-        const phi = Math.acos(2 * Math.random() - 1);
-        const radius = 6 + Math.random() * 2;
-        
-        positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
-        positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
-        positions[i * 3 + 2] = radius * Math.cos(phi);
-      }
-      
-      particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-      
-      const particleMaterial = new THREE.PointsMaterial({
-        color: 0x3b82f6,
-        size: 0.08,
-        transparent: true,
-        opacity: 0.8
-      });
-      
-      const particles = new THREE.Points(particleGeometry, particleMaterial);
-      scene.add(particles);
-
-      // Create connection lines
-      const lineGeometry = new THREE.BufferGeometry();
-      const linePositions = new Float32Array(60 * 3);
-      for (let i = 0; i < 60; i++) {
-        const theta = (i / 30) * Math.PI * 2;
-        linePositions[i * 3] = 5.2 * Math.cos(theta);
-        linePositions[i * 3 + 1] = 0;
-        linePositions[i * 3 + 2] = 5.2 * Math.sin(theta);
-      }
-      lineGeometry.setAttribute('position', new THREE.BufferAttribute(linePositions, 3));
-      const lineMaterial = new THREE.LineBasicMaterial({ color: 0x3b82f6, transparent: true, opacity: 0.2 });
-      const ring = new THREE.LineLoop(lineGeometry, lineMaterial);
-      ring.rotation.x = Math.PI / 6;
-      scene.add(ring);
-
-      camera.position.z = 12;
-      camera.position.x = 5;
-
-      // Animation loop
-      function animate() {
-        requestAnimationFrame(animate);
-        globe.rotation.y += 0.002;
-        particles.rotation.y += 0.001;
-        ring.rotation.z += 0.003;
-        renderer.render(scene, camera);
-      }
-      animate();
-
-      // Handle resize
-      window.addEventListener('resize', () => {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-      });
-    }
-
-    // Initialize particles
-    function initParticles() {
-      const container = document.getElementById('particles');
-      if (!container) return;
-      
-      for (let i = 0; i < 50; i++) {
-        const particle = document.createElement('div');
-        particle.className = 'particle';
-        particle.style.left = Math.random() * 100 + '%';
-        particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
-        particle.style.animationDelay = Math.random() * 10 + 's';
-        particle.style.width = (Math.random() * 4 + 2) + 'px';
-        particle.style.height = particle.style.width;
-        container.appendChild(particle);
-      }
-    }
-
     // Render featured events on home page from API
     document.addEventListener('DOMContentLoaded', async function() {
-      init3DGlobe();
-      initParticles();
       animateCounters();
       try {
         var data = await EventsAPI.getAll({ status: 'open', limit: 3 });
