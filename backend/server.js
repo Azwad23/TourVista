@@ -40,6 +40,7 @@ app.use('/api/payments', require('./routes/payments'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/wishlist', require('./routes/wishlist'));
 app.use('/api/chatbot', require('./routes/chatbot'));
+app.use('/api/settings', require('./routes/settings'));
 
 // ==================== CATCH-ALL: Serve frontend ====================
 app.get('*', (req, res) => {

@@ -184,7 +184,23 @@
       window.location.href = 'login.html';
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
+    // Map between frontend data-key names and backend setting keys
+    var KEY_MAP = {
+      emailNotif: 'email_notifications',
+      regUpdates: 'registration_updates',
+      newEvents: 'new_event_alerts',
+      promoEmails: 'promo_emails',
+      darkMode: 'dark_mode',
+      compactView: 'compact_view',
+      profileVisible: 'profile_visible',
+      twoFactor: 'two_factor'
+    };
+
+    // Reverse map for API -> frontend
+    var REVERSE_KEY_MAP = {};
+    Object.keys(KEY_MAP).forEach(function(k) { REVERSE_KEY_MAP[KEY_MAP[k]] = k; });
+
+    document.addEventListener('DOMContentLoaded', async function() {
       // Populate sidebar user info
       var user = Auth.getUser();
       if (user) {
@@ -193,39 +209,69 @@
         document.querySelectorAll('.sidebar-user-info p').forEach(function(el) { el.textContent = user.role === 'admin' ? 'Administrator' : 'Participant'; });
       }
 
-      // Load saved settings from localStorage
-      loadSettings();
+      // Load settings from backend
+      await loadSettings();
     });
 
-    function loadSettings() {
-      var settings = JSON.parse(localStorage.getItem('tourvista_settings') || '{}');
-      document.querySelectorAll('.toggle-switch').forEach(function(toggle) {
-        var key = toggle.getAttribute('data-key');
-        if (settings[key] !== undefined) {
-          toggle.classList.toggle('active', settings[key]);
+    async function loadSettings() {
+      try {
+        var data = await SettingsAPI.getUser();
+        var serverSettings = data.settings || {};
+
+        // Apply backend settings to toggles
+        document.querySelectorAll('.toggle-switch').forEach(function(toggle) {
+          var frontKey = toggle.getAttribute('data-key');
+          var backKey = KEY_MAP[frontKey];
+          if (backKey && serverSettings[backKey] !== undefined) {
+            toggle.classList.toggle('active', serverSettings[backKey] === true);
+          }
+        });
+
+        // If dark mode is active in DB, apply it
+        if (serverSettings.dark_mode === true) {
+          applyDarkMode(true);
         }
-      });
+      } catch(e) {
+        console.error('Failed to load user settings:', e);
+        // Fallback to localStorage
+        var localSettings = JSON.parse(localStorage.getItem('tourvista_settings') || '{}');
+        document.querySelectorAll('.toggle-switch').forEach(function(toggle) {
+          var key = toggle.getAttribute('data-key');
+          if (localSettings[key] !== undefined) {
+            toggle.classList.toggle('active', localSettings[key]);
+          }
+        });
+      }
     }
 
-    function saveSetting(key, value) {
-      var settings = JSON.parse(localStorage.getItem('tourvista_settings') || '{}');
-      settings[key] = value;
-      localStorage.setItem('tourvista_settings', JSON.stringify(settings));
+    async function saveSettingToBackend(frontKey, value) {
+      var backKey = KEY_MAP[frontKey];
+      if (!backKey) return;
+
+      var settingsObj = {};
+      settingsObj[backKey] = value;
+
+      try {
+        await SettingsAPI.updateUser(settingsObj);
+      } catch(e) {
+        console.error('Failed to save setting:', e);
+      }
+
+      // Also keep localStorage in sync for offline/fast access
+      var localSettings = JSON.parse(localStorage.getItem('tourvista_settings') || '{}');
+      localSettings[frontKey] = value;
+      localStorage.setItem('tourvista_settings', JSON.stringify(localSettings));
     }
 
     function toggleSetting(el) {
       el.classList.toggle('active');
       var key = el.getAttribute('data-key');
       var isActive = el.classList.contains('active');
-      saveSetting(key, isActive);
+      saveSettingToBackend(key, isActive);
       showToast('Setting updated', 'success');
     }
 
-    function toggleDarkMode(el) {
-      el.classList.toggle('active');
-      var isDark = el.classList.contains('active');
-      saveSetting('darkMode', isDark);
-
+    function applyDarkMode(isDark) {
       if (isDark) {
         document.documentElement.style.setProperty('--bg', '#0f172a');
         document.documentElement.style.setProperty('--bg-white', '#1e293b');
@@ -243,13 +289,32 @@
         document.documentElement.style.setProperty('--border', '#e2e8f0');
         document.documentElement.style.setProperty('--border-light', '#f1f5f9');
       }
+    }
+
+    function toggleDarkMode(el) {
+      el.classList.toggle('active');
+      var isDark = el.classList.contains('active');
+      applyDarkMode(isDark);
+      saveSettingToBackend('darkMode', isDark);
       showToast(isDark ? 'Dark mode enabled' : 'Light mode enabled', 'success');
     }
 
-    function exportData() {
+    async function exportData() {
       var user = Auth.getUser();
-      var settings = JSON.parse(localStorage.getItem('tourvista_settings') || '{}');
-      var exportObj = { user: user, settings: settings, exported_at: new Date().toISOString() };
+      var serverSettings = {};
+      try {
+        var data = await SettingsAPI.getUser();
+        serverSettings = data.settings || {};
+      } catch(e) {
+        console.error('Export: could not fetch server settings');
+      }
+      var localSettings = JSON.parse(localStorage.getItem('tourvista_settings') || '{}');
+      var exportObj = {
+        user: user,
+        settings: serverSettings,
+        local_preferences: localSettings,
+        exported_at: new Date().toISOString()
+      };
       var blob = new Blob([JSON.stringify(exportObj, null, 2)], { type: 'application/json' });
       var a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
@@ -258,10 +323,19 @@
       showToast('Data exported successfully', 'success');
     }
 
-    function deleteAccount() {
+    async function deleteAccount() {
       if (!confirm('Are you sure you want to delete your account? This action cannot be undone.')) return;
-      if (!confirm('This will permanently delete all your data. Type OK to confirm.')) return;
-      showToast('Account deletion request submitted. An admin will review this.', 'info');
+      if (!confirm('This will permanently deactivate your account and remove your settings. Continue?')) return;
+
+      try {
+        await SettingsAPI.deleteAccount();
+        showToast('Account deactivated successfully. You will be logged out.', 'success');
+        setTimeout(function() {
+          Auth.logout();
+        }, 2000);
+      } catch(e) {
+        showToast(e.message || 'Failed to deactivate account', 'error');
+      }
     }
   </script>
 </body>

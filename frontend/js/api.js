@@ -441,6 +441,43 @@ const WishlistAPI = {
   }
 };
 
+// ==================== SETTINGS API ====================
+const SettingsAPI = {
+  // Platform settings (admin)
+  async getPlatform() {
+    return apiCall('/settings/platform');
+  },
+
+  async updatePlatform(settings) {
+    return apiCall('/settings/platform', {
+      method: 'PUT',
+      body: JSON.stringify({ settings })
+    });
+  },
+
+  // Single platform setting (public)
+  async getPlatformKey(key) {
+    return apiCall('/settings/platform/' + key);
+  },
+
+  // User settings (self)
+  async getUser() {
+    return apiCall('/settings/user');
+  },
+
+  async updateUser(settings) {
+    return apiCall('/settings/user', {
+      method: 'PUT',
+      body: JSON.stringify({ settings })
+    });
+  },
+
+  // Account deletion (self)
+  async deleteAccount() {
+    return apiCall('/settings/account', { method: 'DELETE' });
+  }
+};
+
 // ==================== EVENT IMAGE HELPER ====================
 function getEventImageUrl(imageUrl) {
   if (!imageUrl) return '';

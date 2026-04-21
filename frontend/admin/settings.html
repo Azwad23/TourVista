@@ -134,27 +134,30 @@
         <div class="card-body">
           <h3 style="font-size:1.1rem;margin-bottom:20px;"><i class="fas fa-sliders-h" style="margin-right:8px;color:var(--primary);"></i> Platform Preferences</h3>
           <div style="display:flex;flex-direction:column;gap:16px;">
-            <label style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg);border-radius:var(--radius);cursor:pointer;">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg);border-radius:var(--radius);">
               <div>
                 <div style="font-weight:600;font-size:0.9rem;">Email Notifications</div>
                 <div style="font-size:0.8rem;color:var(--text-muted);">Receive email alerts for new registrations</div>
               </div>
-              <input type="checkbox" checked style="width:18px;height:18px;accent-color:var(--primary);">
-            </label>
-            <label style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg);border-radius:var(--radius);cursor:pointer;">
+              <div class="toggle-switch" id="toggle_email_notifications" data-key="email_notifications" onclick="togglePlatformSetting(this)"></div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg);border-radius:var(--radius);">
               <div>
                 <div style="font-weight:600;font-size:0.9rem;">Auto-approve Registrations</div>
                 <div style="font-size:0.8rem;color:var(--text-muted);">Automatically approve when spots are available</div>
               </div>
-              <input type="checkbox" style="width:18px;height:18px;accent-color:var(--primary);">
-            </label>
-            <label style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg);border-radius:var(--radius);cursor:pointer;">
+              <div class="toggle-switch" id="toggle_auto_approve_registrations" data-key="auto_approve_registrations" onclick="togglePlatformSetting(this)"></div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg);border-radius:var(--radius);">
               <div>
                 <div style="font-weight:600;font-size:0.9rem;">Chatbot Active</div>
                 <div style="font-size:0.8rem;color:var(--text-muted);">Enable the AI chatbot for participants</div>
               </div>
-              <input type="checkbox" checked style="width:18px;height:18px;accent-color:var(--primary);">
-            </label>
+              <div class="toggle-switch" id="toggle_chatbot_active" data-key="chatbot_active" onclick="togglePlatformSetting(this)"></div>
+            </div>
+          </div>
+          <div id="platformSettingsStatus" style="margin-top:12px;font-size:0.82rem;color:var(--text-muted);display:none;">
+            <i class="fas fa-check-circle" style="color:var(--success);margin-right:4px;"></i> Settings saved
           </div>
         </div>
       </div>
@@ -165,7 +168,7 @@
           <h3 style="font-size:1.1rem;margin-bottom:8px;color:var(--danger);"><i class="fas fa-exclamation-triangle" style="margin-right:8px;"></i> Danger Zone</h3>
           <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:16px;">These actions are irreversible. Proceed with caution.</p>
           <div style="display:flex;gap:12px;">
-            <button class="btn btn-ghost" style="color:var(--danger);border-color:var(--danger);" onclick="if(confirm('Are you sure you want to deactivate your account?')) showToast('Account deactivation would go here','info');">
+            <button class="btn btn-ghost" style="color:var(--danger);border-color:var(--danger);" onclick="deactivateAdminAccount()">
               <i class="fas fa-user-slash"></i> Deactivate Account
             </button>
           </div>
@@ -194,8 +197,54 @@
       } catch(e) {
         console.error('Failed to load user data:', e);
       }
+
+      // Load platform settings from backend
+      await loadPlatformSettings();
     });
 
+    // ==================== PLATFORM SETTINGS ====================
+    async function loadPlatformSettings() {
+      try {
+        var data = await SettingsAPI.getPlatform();
+        var settings = data.settings || {};
+
+        // Apply to toggle switches
+        document.querySelectorAll('.toggle-switch[data-key]').forEach(function(toggle) {
+          var key = toggle.getAttribute('data-key');
+          if (settings[key] !== undefined) {
+            toggle.classList.toggle('active', settings[key] === true);
+          }
+        });
+      } catch(e) {
+        console.error('Failed to load platform settings:', e);
+        showToast('Could not load platform settings', 'error');
+      }
+    }
+
+    async function togglePlatformSetting(el) {
+      el.classList.toggle('active');
+      var key = el.getAttribute('data-key');
+      var isActive = el.classList.contains('active');
+
+      // Build settings object with just this key
+      var settingsObj = {};
+      settingsObj[key] = isActive;
+
+      try {
+        await SettingsAPI.updatePlatform(settingsObj);
+        // Show saved indicator
+        var statusEl = document.getElementById('platformSettingsStatus');
+        statusEl.style.display = 'block';
+        setTimeout(function() { statusEl.style.display = 'none'; }, 2500);
+        showToast('Platform setting updated', 'success');
+      } catch(e) {
+        // Revert toggle on error
+        el.classList.toggle('active');
+        showToast(e.message || 'Failed to update setting', 'error');
+      }
+    }
+
+    // ==================== PROFILE ====================
     async function saveAdminProfile() {
       var firstName = document.getElementById('settingsFirstName').value.trim();
       var lastName = document.getElementById('settingsLastName').value.trim();
@@ -222,12 +271,13 @@
       }
     }
 
+    // ==================== PASSWORD ====================
     async function changeAdminPassword() {
       var current = document.getElementById('settingsCurrentPwd').value;
       var newPwd = document.getElementById('settingsNewPwd').value;
-      var confirm = document.getElementById('settingsConfirmPwd').value;
+      var confirmPwd = document.getElementById('settingsConfirmPwd').value;
 
-      if (!current || !newPwd || !confirm) {
+      if (!current || !newPwd || !confirmPwd) {
         showToast('Please fill in all password fields', 'error');
         return;
       }
@@ -235,7 +285,7 @@
         showToast('New password must be at least 6 characters', 'error');
         return;
       }
-      if (newPwd !== confirm) {
+      if (newPwd !== confirmPwd) {
         showToast('Passwords do not match', 'error');
         return;
       }
@@ -246,6 +296,22 @@
         document.getElementById('adminPasswordForm').reset();
       } catch(err) {
         showToast(err.message || 'Password change failed', 'error');
+      }
+    }
+
+    // ==================== DEACTIVATE ACCOUNT ====================
+    async function deactivateAdminAccount() {
+      if (!confirm('Are you sure you want to deactivate your admin account? This action cannot be undone.')) return;
+      if (!confirm('WARNING: This will deactivate your admin account and log you out. Continue?')) return;
+
+      try {
+        await SettingsAPI.deleteAccount();
+        showToast('Account deactivated successfully. Logging out...', 'success');
+        setTimeout(function() {
+          Auth.logout();
+        }, 2000);
+      } catch(e) {
+        showToast(e.message || 'Failed to deactivate account', 'error');
       }
     }
   </script>

@@ -4,6 +4,16 @@ const { authenticate, requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
+// Helper to check auto-approve setting
+async function isAutoApproveEnabled() {
+  try {
+    const [rows] = await pool.query("SELECT setting_value FROM platform_settings WHERE setting_key = 'auto_approve_registrations'");
+    return rows.length > 0 && rows[0].setting_value === 'true';
+  } catch (err) {
+    return false;
+  }
+}
+
 // ==================== REGISTER FOR EVENT (Participant) ====================
 router.post('/', authenticate, async (req, res) => {
   try {
@@ -37,6 +47,12 @@ router.post('/', authenticate, async (req, res) => {
     let regStatus = 'pending';
     if (event.current_participants >= event.participant_limit) {
       regStatus = 'waitlisted';
+    } else {
+      // Check if auto-approve is enabled
+      const autoApprove = await isAutoApproveEnabled();
+      if (autoApprove) {
+        regStatus = 'approved';
+      }
     }
 
     const [result] = await pool.query(
@@ -44,8 +60,20 @@ router.post('/', authenticate, async (req, res) => {
       [event_id, req.user.id, regStatus, emergency_contact || null, notes || null]
     );
 
+    // If auto-approved, increment participant count
+    if (regStatus === 'approved') {
+      await pool.query(
+        'UPDATE events SET current_participants = current_participants + 1 WHERE id = ?',
+        [event_id]
+      );
+    }
+
+    let message = 'Registration submitted for approval';
+    if (regStatus === 'waitlisted') message = 'Added to waitlist';
+    if (regStatus === 'approved') message = 'Registration approved automatically!';
+
     res.status(201).json({
-      message: regStatus === 'waitlisted' ? 'Added to waitlist' : 'Registration submitted for approval',
+      message,
       registration: {
         id: result.insertId,
         event_id,
