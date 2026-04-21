@@ -202,10 +202,10 @@
                 <span><i class="fas fa-calendar"></i> ${formatDate(event.start_date)}</span>
               </p>
               <p class="event-desc">${event.description ? event.description.substring(0, 100) + '...' : ''}</p>
-              <div class="event-card-footer">
+              <div style="padding:0 20px 16px;">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-                  <span class="price">${formatCurrency(event.cost)}</span>
-                  <span class="spots">${spotsLeft} spots left</span>
+                  <span class="price" style="font-size:1.15rem;font-weight:700;color:var(--primary);">${formatCurrency(event.cost)}</span>
+                  <span class="spots" style="font-size:0.85rem;color:var(--text-muted);">${spotsLeft} spots left</span>
                 </div>
                 ${isOpen && hasSpotsLeft ? `
                   <button class="btn btn-primary btn-sm" onclick="enrollInEvent(${event.id})" style="width:100%;">
