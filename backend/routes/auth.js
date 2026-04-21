@@ -173,6 +173,7 @@ router.post('/register', [
         first_name,
         last_name,
         email,
+        phone: phone || null,
         role: 'participant',
         avatar,
         profile_picture: null
@@ -238,6 +239,7 @@ router.post('/login', [
         first_name: user.first_name,
         last_name: user.last_name,
         email: user.email,
+        phone: user.phone || null,
         role: user.role,
         avatar: user.avatar,
         profile_picture: user.profile_picture && user.profile_picture.startsWith('data:') ? '/api/users/profile-picture/' + user.id : user.profile_picture
