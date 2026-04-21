@@ -179,36 +179,57 @@
         const grid = document.getElementById('eventsGrid');
         grid.innerHTML = events.map(event => {
           var isWished = wishlistedIds.includes(event.id);
+          const spotsLeft = (event.participant_limit || 0) - (event.current_participants || 0);
+          const isOpen = event.status === 'open';
+          const hasSpotsLeft = spotsLeft > 0;
+          
           return `
           <div class="event-card" data-animate>
-            <a href="event-detail.html?id=${event.id}" style="text-decoration:none;color:inherit;">
-              <div class="event-card-img">
-                ${event.image_url
-                  ? '<img src="' + getEventImageUrl(event.image_url) + '" alt="' + event.title + '">'
-                  : '<div class="placeholder-img" style="' + event.gradient + '"><i class="' + event.icon + '"></i></div>'
-                }
-                <div class="event-card-badge">${getCategoryLabel(event.category)}</div>
-                <button class="wishlist-heart ${isWished ? 'active' : ''}" onclick="event.preventDefault();event.stopPropagation();toggleWishlistCard(this,${event.id})" data-id="${event.id}" title="Save to wishlist">
-                  <i class="${isWished ? 'fas' : 'far'} fa-heart"></i>
-                </button>
-              </div>
-              <div class="event-card-body">
-                <h3>${event.title}</h3>
-                <p class="event-meta">
-                  <span><i class="fas fa-map-marker-alt"></i> ${event.destination || 'TBA'}</span>
-                  <span><i class="fas fa-calendar"></i> ${formatDate(event.start_date)}</span>
-                </p>
-                <p class="event-desc">${event.description ? event.description.substring(0, 100) + '...' : ''}</p>
-                <div class="event-card-footer">
+            <div class="event-card-img" onclick="window.location.href='event-detail.html?id=${event.id}'" style="cursor:pointer;">
+              ${event.image_url
+                ? '<img src="' + getEventImageUrl(event.image_url) + '" alt="' + event.title + '">'
+                : '<div class="placeholder-img" style="' + event.gradient + '"><i class="' + event.icon + '"></i></div>'
+              }
+              <div class="event-card-badge">${getCategoryLabel(event.category)}</div>
+              <button class="wishlist-heart ${isWished ? 'active' : ''}" onclick="event.stopPropagation();toggleWishlistCard(this,${event.id})" data-id="${event.id}" title="Save to wishlist">
+                <i class="${isWished ? 'fas' : 'far'} fa-heart"></i>
+              </button>
+            </div>
+            <div class="event-card-body">
+              <h3 onclick="window.location.href='event-detail.html?id=${event.id}'" style="cursor:pointer;">${event.title}</h3>
+              <p class="event-meta">
+                <span><i class="fas fa-map-marker-alt"></i> ${event.destination || 'TBA'}</span>
+                <span><i class="fas fa-calendar"></i> ${formatDate(event.start_date)}</span>
+              </p>
+              <p class="event-desc">${event.description ? event.description.substring(0, 100) + '...' : ''}</p>
+              <div class="event-card-footer" style="display:flex;flex-direction:column;gap:12px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
                   <span class="price">${formatCurrency(event.cost)}</span>
-                  <span class="spots">${(event.participant_limit || 0) - (event.current_participants || 0)} spots left</span>
+                  <span class="spots">${spotsLeft} spots left</span>
                 </div>
+                ${isOpen && hasSpotsLeft ? `
+                  <button class="btn btn-primary btn-sm" onclick="enrollInEvent(${event.id})" style="width:100%;">
+                    <i class="fas fa-ticket-alt"></i> Enroll Now
+                  </button>
+                ` : isOpen && !hasSpotsLeft ? `
+                  <button class="btn btn-warning btn-sm" onclick="enrollInEvent(${event.id})" style="width:100%;">
+                    <i class="fas fa-clock"></i> Join Waitlist
+                  </button>
+                ` : `
+                  <button class="btn btn-sm" style="width:100%;background:var(--border);color:var(--text-muted);cursor:not-allowed;" disabled>
+                    <i class="fas fa-lock"></i> Registration Closed
+                  </button>
+                `}
               </div>
-            </a>
+            </div>
           </div>
         `;
         }).join('');
       }
+    }
+
+    function enrollInEvent(eventId) {
+      window.location.href = 'event-detail.html?id=' + eventId;
     }
 
     function setCategory(cat, el) {
