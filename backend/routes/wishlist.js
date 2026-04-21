@@ -16,13 +16,23 @@ router.get('/', async (req, res) => {
               e.start_date, e.end_date, e.cost, e.participant_limit,
               e.current_participants, e.destination, e.meeting_point,
               e.difficulty, e.gradient, e.icon, e.image_url,
-              e.created_by, e.created_at, e.updated_at
+              e.created_by, e.created_at, e.updated_at,
+              CASE WHEN e.image_data IS NOT NULL THEN 1 ELSE 0 END as has_image
        FROM wishlists w
        JOIN events e ON w.event_id = e.id
        WHERE w.user_id = ?
        ORDER BY w.created_at DESC`,
       [req.user.id]
     );
+    
+    // Transform image_url for events with DB-stored images
+    rows.forEach(event => {
+      if (event.has_image) {
+        event.image_url = '/api/events/' + event.id + '/image-data';
+      }
+      delete event.has_image;
+    });
+    
     res.json({ wishlist: rows });
   } catch (err) {
     console.error('Get wishlist error:', err);
