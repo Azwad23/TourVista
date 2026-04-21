@@ -11,7 +11,12 @@ router.use(authenticate);
 router.get('/', async (req, res) => {
   try {
     const [rows] = await pool.query(
-      `SELECT w.id AS wishlist_id, w.created_at AS added_at, e.*
+      `SELECT w.id AS wishlist_id, w.created_at AS added_at,
+              e.id, e.title, e.description, e.category, e.status,
+              e.start_date, e.end_date, e.cost, e.participant_limit,
+              e.current_participants, e.destination, e.meeting_point,
+              e.difficulty, e.gradient, e.icon, e.image_url,
+              e.created_by, e.created_at, e.updated_at
        FROM wishlists w
        JOIN events e ON w.event_id = e.id
        WHERE w.user_id = ?
