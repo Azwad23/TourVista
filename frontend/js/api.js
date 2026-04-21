@@ -481,7 +481,16 @@ const SettingsAPI = {
 // ==================== EVENT IMAGE HELPER ====================
 function getEventImageUrl(imageUrl) {
   if (!imageUrl) return '';
-  return imageUrl;
+  // If it's already a full URL (http/https), return as-is
+  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+    return imageUrl;
+  }
+  // If it starts with /, it's already a proper path from root
+  if (imageUrl.startsWith('/')) {
+    return imageUrl;
+  }
+  // Otherwise, prepend /
+  return '/' + imageUrl;
 }
 
 function getEventImageHtml(event, height) {

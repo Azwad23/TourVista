@@ -146,11 +146,12 @@
           const cost = ev.cost ? formatCurrency(ev.cost) : 'Free';
           const eventId = ev.id;
 
+          const imageUrl = ev.image_url ? getEventImageUrl(ev.image_url) : '';
           return `
             <div class="wishlist-card" id="wishlist-card-${eventId}">
               <div class="wishlist-card-img">
-                ${ev.image_url
-                  ? '<img src="' + getEventImageUrl(ev.image_url) + '" alt="' + title + '" style="width:100%;height:100%;object-fit:cover;">'
+                ${imageUrl
+                  ? '<img src="' + imageUrl + '" alt="' + title + '" style="width:100%;height:100%;object-fit:cover;" loading="eager">'
                   : '<div class="placeholder-img" style="' + gradient + ';"><i class="' + icon + '" style="color:white;font-size:2rem;"></i></div>'
                 }
                 <button class="wishlist-remove-btn" onclick="removeFromWishlist(${eventId})" title="Remove from wishlist">
