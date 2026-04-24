@@ -1800,6 +1800,12 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: var(--radius);
   font-size: 0.9rem;
   background: var(--bg-white);
+  color: var(--text);
+  caret-color: var(--text);
+}
+
+.search-box input::placeholder {
+  color: var(--text-muted);
 }
 
 .search-box i {
